@@ -1,6 +1,6 @@
 {
-  "name": "boilerplate",
-  "description": "todo",
+  "name": "com",
+  "description": "portfolio",
   "private": true,
   "version": "1.0.0",
   "type": "module",
@@ -27,15 +27,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/ianrandmckenzie/boilerplate.git"
+    "url": "git+https://github.com/ianrandmckenzie/com.git"
   },
   "keywords": [
-    "todo"
+    "portfolio"
   ],
   "author": "Ian Rand McKenzie",
   "license": "Copyright © Ian Rand McKenzie 2025, All Rights Reserved where applicable.",
   "bugs": {
-    "url": "https://github.com/ianrandmckenzie/boilerplate/issues"
+    "url": "https://github.com/ianrandmckenzie/com/issues"
   },
   "homepage": "https://www.ianrandmckenzie.com",
   "devDependencies": {

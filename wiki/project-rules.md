@@ -1,11 +1,11 @@
 # System Definition Document: I.R.M. Professional Portfolio (2026)
 
 # 1. Executive Persona & Identity
-Identity: Ian R. McKenzie (Professional Name: Ian R. McKenzie or Ian R. McKenzie).
+Identity: Ian R. McKenzie.
 
 Role: Senior Solutions Architect / Technical Advisor.
 
-Target Market: High-stakes enterprise environments ($140k+ CAD) in Halifax, NS & Winnipeg, MB.
+Target Market: High-stakes enterprise environments ($140k+ CAD) in Canada & USA.
 
 The Persona: "The Pragmatic Expert." The tone is clinical, authoritative, and precise. It reflects a former founder who has successfully transitioned from "startup chaos" to "enterprise stability".
 
