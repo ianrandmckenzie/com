@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lab write-up: Prime Spiral Visualization Engine — an interactive study in procedural coordinate mathematics and prime number distribution, built with Vanilla JS and Tauri/Rust.">
+    <meta name="keywords" content="Solutions Architect Rust Ruby, Rust Systems Performance Benchmarks, Memory-Safe Concurrency, Algorithmic Visualization Research, Tauri Cross-Platform Rust">
+    <title>Lab Write-Up: Prime Spiral Visualization Engine | Ian R. McKenzie</title>
+    <style>
+        /* light-mode grid lines; dark overrides below */
+        .crp-grid { background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 40px 40px; }
+        .dark .crp-grid { background-image: linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px); background-size: 40px 40px; }
+    </style>
+    <script>
+      (function(){var p=localStorage.getItem('theme-preference');var d=document.documentElement;if(p==='light'){d.classList.remove('dark');}else if(p==='dark'){d.classList.add('dark');}else{if(!window.matchMedia('(prefers-color-scheme: light)').matches){d.classList.add('dark');}}})();
+    </script>
+    <link href="/style.css" rel="stylesheet" />
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-sans leading-relaxed crp-grid">
+
+    <main>
+        <article class="max-w-5xl mx-auto px-6 pt-4 md:pt-10 pb-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-x border-slate-200 dark:border-slate-800 shadow-2xl">
+
+            <header class="mb-20 border-b border-slate-200 dark:border-slate-800 pb-12">
+                <div class="inline-flex items-center gap-2 px-3 py-1 mb-6 text-[10px] font-mono font-bold tracking-[0.3em] text-purple-600 dark:text-purple-400 border border-purple-500/30 rounded uppercase bg-purple-500/5">
+                    <span class="flex h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                    REF: LAB-001-VIZ
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black mb-8 leading-tight uppercase tracking-tighter">
+                    Prime Spiral <span class="text-purple-600 dark:text-purple-500">Visualization</span> Engine
+                </h1>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-[11px] font-mono text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Role</span> Sole Architect</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Environment</span> JS / Tauri + Rust</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Focus</span> Procedural Math</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Status</span> Completed</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Load_Time</span> &lt; 450ms</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Relevance</span> 79 / 100</div>
+                </div>
+            </header>
+
+            <div class="space-y-24">
+
+                <!-- Research Context -->
+                <section class="grid md:grid-cols-3 gap-12">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">The_Research_Context</div>
+                    <div class="md:col-span-2 space-y-6">
+                        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-light">
+                            The foundational concept draws from the <strong>Sacks Spiral</strong>—a method of plotting integers on an Archimedean spiral such that prime numbers reveal striking geometric alignment. This project treats that mathematical structure as a canvas for applied research into procedural coordinate systems, animated parameterization, and human-perceptible pattern emergence.
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+                            The objective was not merely to render a known mathematical curiosity, but to engineer an interactive system around it—exposing coefficients, rotation offsets, and prime highlighting as live parameters—so that non-trivial visual phenomena become discoverable by the user in real time. This demands both mathematical precision at the rendering layer and disciplined UI architecture at the control layer.
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+                            The research directly informs professional work in <strong>systems visualization</strong>, <strong>defensive interface design</strong>, and <strong>cross-platform native deployment via Tauri/Rust</strong>—domains with direct applicability to enterprise tooling and monitoring infrastructure.
+                        </p>
+                    </div>
+                </section>
+
+                <!-- Implementation -->
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Implementation</div>
+                    <div class="md:col-span-2 space-y-8">
+
+                        <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
+                            <h4 class="text-sm font-bold text-purple-600 dark:text-purple-500 mb-4 uppercase tracking-widest">01. Mathematical Engine</h4>
+                            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                                Each integer is mapped to a polar coordinate pair <em>(r, θ)</em>, where the angular position is derived from its index on the spiral and its radial distance from a tunable coefficient. A primality check runs against this index on every render cycle, applying distinct visual treatment—color, size, and glow—to prime-positioned nodes. Animated parameters continuously modulate the coefficient and rotation values, revealing the underlying geometric structure of the prime distribution dynamically.
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">VANILLA_JS</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">CANVAS_API</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">POLAR_COORDINATES</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">PRIME_SIEVE</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
+                            <h4 class="text-sm font-bold text-purple-600 dark:text-purple-500 mb-4 uppercase tracking-widest">02. Defensive UI Architecture</h4>
+                            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                                The control interface is engineered on a poka-yoke model: every user-facing parameter is bounded, validated, and clamped prior to propagation into the render pipeline. This prevents degenerate states—such as division-by-zero in the coordinate transform or render-frame stalls from out-of-range inputs—without exposing error states to the end user. The system was validated under sustained adversarial use, including rapid input cycling and extended uninterrupted sessions, with zero observed regressions.
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">POKA-YOKE_DESIGN</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">INPUT_CLAMPING</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">TAILWINDCSS</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
+                            <h4 class="text-sm font-bold text-purple-600 dark:text-purple-500 mb-4 uppercase tracking-widest">03. Cross-Platform Deployment</h4>
+                            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                                The Vanilla JS/Tailwind core is wrapped in a <strong>Tauri/Rust</strong> shell, enabling native binary distribution across macOS, Windows, and Linux from a single codebase. This architecture mirrors the hybrid deployment model used in enterprise desktop tooling—keeping the rendering layer lightweight and web-native while leveraging Rust's memory safety guarantees for the application host. The web build additionally passed all Lighthouse audit categories at 100, confirming optimal asset delivery, accessibility compliance, and runtime performance independent of the native wrapper.
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">TAURI_V2</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">RUST</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">MULTI-PLATFORM_BUILD</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">LIGHTHOUSE_100</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Verified Outcome -->
+                <section class="bg-purple-700 rounded-lg p-6 md:p-12 text-white shadow-2xl">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-12">
+                        <div class="max-w-md text-center md:text-left">
+                            <h3 class="text-3xl font-black mb-4 uppercase tracking-tighter">Verified Outcome</h3>
+                            <p class="text-purple-100 font-light leading-relaxed">
+                                The system achieved perfect Lighthouse scores across all audit categories and sustained zero regressions under extended stress testing. Deployed as both a web build and a native cross-platform application.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6 md:gap-12 text-center border-t md:border-t-0 md:border-l border-purple-400 pt-6 md:pt-0 md:pl-12 w-full md:w-auto">
+                            <div>
+                                <div class="text-6xl font-black">100</div>
+                                <div class="text-[10px] uppercase font-bold tracking-widest text-purple-200 mt-2">Lighthouse Score</div>
+                            </div>
+                            <div>
+                                <div class="text-6xl font-black">0</div>
+                                <div class="text-[10px] uppercase font-bold tracking-widest text-purple-200 mt-2">Regressions</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Live Demo + Research Notes -->
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16 pb-20">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Research_Notes</div>
+                    <div class="md:col-span-2 space-y-8">
+                        <div>
+                            <h4 class="text-xs font-black text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-widest">Live Deployment</h4>
+                            <a href="https://spiral.ianrandmckenzie.com/" target="_blank" rel="noopener noreferrer" class="text-purple-400 hover:text-purple-300 font-mono text-sm underline underline-offset-4 transition-colors">
+                                spiral.ianrandmckenzie.com →
+                            </a>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-widest">Prior Art &amp; Inspiration</h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-300 italic leading-relaxed">
+                                This work was inspired by the research of <strong class="text-slate-700 dark:text-slate-300">Rob Sacks</strong> on the Sacks Spiral—a continuous variant of the Ulam Spiral that plots integers on an Archimedean spiral to reveal the geometric structure of prime distribution. This project extends that foundation into an interactive, parameterized system optimized for real-time rendering and cross-platform deployment.
+                            </p>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-widest">IP Note</h4>
+                            <p class="text-sm text-slate-600 dark:text-slate-300 italic leading-relaxed">
+                                This entry represents an independent technical benchmark. The coordinate transformation logic, parameterization architecture, and defensive UI patterns developed here are maintained as part of the broader R&D portfolio. Full technical specifications are available upon request.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </article>
+    </main>
+
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Case Study: Architecting Media Sovereignty through client-side OS virtualization and decoupled asset orchestration for Failure Unit.">
+    <meta name="keywords" content="Solutions Architect Rust Ruby, Zero-Trust Infrastructure Canada, Legacy System Migration Specialist, Browser-Side OS Architecture, IndexedDB Virtual File System">
+    <title>Case Study: Interface Virtualization | Ian R. McKenzie</title>
+    <style>
+        .webdoc-bg { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23cbd5e1' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+        .dark .webdoc-bg { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e293b' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+    </style>
+    <script>
+      (function(){var p=localStorage.getItem('theme-preference');var d=document.documentElement;if(p==='light'){d.classList.remove('dark');}else if(p==='dark'){d.classList.add('dark');}else{if(!window.matchMedia('(prefers-color-scheme: light)').matches){d.classList.add('dark');}}})();
+    </script>
+    <link href="/style.css" rel="stylesheet" />
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-sans leading-relaxed webdoc-bg">
+
+    <main>
+        <article class="max-w-5xl mx-auto px-6 pt-4 md:pt-10 pb-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-x border-slate-200 dark:border-slate-800 shadow-2xl">
+            <header class="mb-20 border-b border-slate-200 dark:border-slate-800 pb-12">
+                <div class="inline-block px-3 py-1 mb-6 text-[10px] font-mono font-bold tracking-[0.3em] text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-700 rounded uppercase bg-blue-50 dark:bg-blue-950/40">
+                    REF: ARCH-003-MEDIA
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black mb-8 leading-tight uppercase tracking-tighter">
+                    Architecting <span class="text-blue-500">Media Sovereignty</span> via Client-Side Virtualization
+                </h1>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-[11px] font-mono text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Role</span> Principal Architect</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Storage</span> IndexedDB / VFS</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Latency</span> &lt; 1.0s FCP</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Model</span> Zero-Backend UGC</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Load_Time</span> &lt; 500ms</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Relevance</span> 88 / 100</div>
+                </div>
+            </header>
+
+            <div class="space-y-24">
+
+                <section class="grid md:grid-cols-3 gap-12">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Technical_Abstract</div>
+                    <div class="md:col-span-2 space-y-6">
+                        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-light border-l-2 border-blue-300 dark:border-blue-800 pl-6">
+                            Failureunit.tv required a resilient, low-cost infrastructure for independent media distribution. I architected a <strong>self-recursive web operating system</strong> that virtualizes file management and user state entirely within the client browser.
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-400">
+                            The objective was to achieve <strong>"Independent Media Sovereignty"</strong>—engineering a system that offloads the legal and financial weight of media hosting and UGC data persistence while maintaining a high-fidelity, immersive user experience.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Implementation</div>
+                    <div class="md:col-span-2 space-y-8">
+                        <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
+                            <h4 class="text-sm font-bold text-blue-600 dark:text-blue-500 mb-4 uppercase tracking-widest">01. Virtual File System (VFS) & Persistence</h4>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                                Developed a functional client-side OS layer using Vanilla JS and IndexedDB. By virtualizing the file/folder hierarchy in the browser, the system achieves zero-latency interaction for UGC without the liability or cost of centralized database overhead.
+                            </p>
+                            <div class="flex gap-2">
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">BROWSER_STORAGE</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">RECURSIVE_OS_SIM</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
+                            <h4 class="text-sm font-bold text-purple-600 dark:text-purple-500 mb-4 uppercase tracking-widest">02. Decoupled Media Orchestration</h4>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                                Engineered a managed intake system leveraging the YouTube API to circumvent royalty complexity and bandwidth friction. This strategic decoupling ensures the platform remains high-performance and scalable with sub-1.0s download times regardless of library size.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-blue-600 rounded-lg p-6 md:p-12 text-white shadow-2xl">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-12">
+                        <div class="max-w-md text-center md:text-left">
+                            <h3 class="text-3xl font-black mb-4 uppercase tracking-tighter">System Benchmarking</h3>
+                            <p class="text-blue-100 font-light leading-relaxed">
+                                The resulting architecture provides a turnkey alternative to centralized media platforms, prioritizing low-overhead operations and data privacy.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6 md:gap-12 text-center border-t md:border-t-0 md:border-l border-blue-400 pt-6 md:pt-0 md:pl-12 w-full md:w-auto">
+                            <div>
+                                <div class="text-6xl font-black">&lt;1s</div>
+                                <div class="text-[10px] uppercase font-bold tracking-widest text-blue-200 mt-2">FCP Latency</div>
+                            </div>
+                            <div>
+                                <div class="text-6xl font-black">0$</div>
+                                <div class="text-[10px] uppercase font-bold tracking-widest text-blue-200 mt-2">Storage Scaling Cost</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16 pb-20">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Strategy_Notes</div>
+                    <div class="md:col-span-2">
+                        <p class="text-sm text-slate-600 dark:text-slate-400 italic leading-relaxed">
+                            Applied Research Note: This implementation represents a benchmark in "Browser-as-the-Server" architecture. By offloading state to the client, the system is natively resilient to concurrent traffic spikes while maintaining strict user privacy—the client retains full ownership of their data within their local environment.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16 pb-20">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">NostalgiaOS_Framework</div>
+                    <div class="md:col-span-2 space-y-6">
+                        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-light border-l-2 border-blue-300 dark:border-blue-800 pl-6">
+                            The architectural constraints surfaced during FailureUnit's virtualization work were extracted and formalized into <strong>NostalgiaOS</strong>—an open-source UI framework for building modular, browser-contained applications without a backend dependency.
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-400 leading-relaxed">
+                            NostalgiaOS addresses a specific constraint: feature-rich interfaces that must operate within strict browser-side boundaries—no server, no database, no persistent session management. The framework provisions composable UI primitives, a virtual state bus, and a file-system abstraction layer that mirrors the persistence model pioneered here.
+                        </p>
+                        <div class="bg-slate-100 dark:bg-slate-950 p-6 border border-slate-200 dark:border-slate-800 rounded">
+                            <h5 class="text-xs font-bold text-blue-600 dark:text-blue-500 mb-3 uppercase tracking-widest">Architectural Output</h5>
+                            <div class="flex flex-wrap gap-2">
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">OPEN_SOURCE</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">ZERO_BACKEND</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">MODULAR_PRIMITIVES</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">VFS_ABSTRACTION</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Live Deployment -->
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16 pb-20">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Live_Deployment</div>
+                    <div class="md:col-span-2 space-y-8">
+                        <div>
+                            <h4 class="text-xs font-black text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-widest">FailureUnit Platform</h4>
+                            <a href="https://www.failureunit.tv" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:text-blue-400 font-mono text-sm underline underline-offset-4 transition-colors">
+                                failureunit.tv &rarr;
+                            </a>
+                        </div>
+                        <div>
+                            <h4 class="text-xs font-black text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-widest">NostalgiaOS Framework</h4>
+                            <a href="https://github.com/ianrandmckenzie/nostalgia_os" target="_blank" rel="noopener noreferrer" class="text-blue-500 hover:text-blue-400 font-mono text-sm underline underline-offset-4 transition-colors">
+                                github.com/ianrandmckenzie/nostalgia_os &rarr;
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </article>
+    </main>
+
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

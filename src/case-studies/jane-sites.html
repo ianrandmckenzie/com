@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Case Study: How Ian R. McKenzie modernized a legacy multi-tenant Rails asset, architected automated onboarding, and prepared the platform for acquisition by Jane.app.">
+    <meta name="keywords" content="Solutions Architect Rust Ruby, Zero-Trust Infrastructure Canada, Legacy System Migration Specialist, HIPAA Compliant SaaS Architecture, HealthTech Acquisition Architecture">
+    <title>Case Study: Systems Modernization | Ian R. McKenzie</title>
+    <style>
+        .webdoc-bg { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23cbd5e1' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+        .dark .webdoc-bg { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e293b' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+    </style>
+    <script>
+      (function(){var p=localStorage.getItem('theme-preference');var d=document.documentElement;if(p==='light'){d.classList.remove('dark');}else if(p==='dark'){d.classList.add('dark');}else{if(!window.matchMedia('(prefers-color-scheme: light)').matches){d.classList.add('dark');}}})();
+    </script>
+    <link href="/style.css" rel="stylesheet" />
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-sans leading-relaxed webdoc-bg">
+
+    <main>
+        <article class="max-w-5xl mx-auto px-6 pt-4 md:pt-10 pb-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-x border-slate-200 dark:border-slate-800 shadow-2xl">
+            <header class="mb-20 border-b border-slate-200 dark:border-slate-800 pb-12">
+                <div class="inline-block px-3 py-1 mb-6 text-[10px] font-mono font-bold tracking-[0.3em] text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-700 rounded uppercase bg-blue-50 dark:bg-blue-950/40">
+                    REF: ARCH-002-CLINIC
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black mb-8 leading-tight uppercase tracking-tighter">
+                    Architecting <span class="text-blue-500">Automated Scalability</span> for Health-Tech Acquisition
+                </h1>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-[11px] font-mono text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Role</span> Solutions Architect</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Environment</span> Rails / AWS / S3</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Focus</span> Multi-Tenant PLG</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Exit</span> Jane.app</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Load_Time</span> &lt; 500ms</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Relevance</span> 96 / 100</div>
+                </div>
+            </header>
+
+            <div class="space-y-24">
+
+                <section class="grid md:grid-cols-3 gap-12">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">The_Situation</div>
+                    <div class="md:col-span-2 space-y-6">
+                        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-light border-l-2 border-blue-300 dark:border-blue-800 pl-6">
+                            A legacy multi-tenant Ruby on Rails asset remained an underutilized business unit due to high technical debt and a manual onboarding process that required hours of specialized labor per clinic.
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-400">
+                            The objective was to transform this idle asset into a <strong>Market-Ready MVP</strong> by refactoring core infrastructure, hardening security protocols, and engineering a self-serve provisioning engine to facilitate rapid customer acquisition.
+                        </p>
+                    </div>
+                </section>
+
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Implementation</div>
+                    <div class="md:col-span-2 space-y-8">
+                        <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
+                            <h4 class="text-sm font-bold text-blue-600 dark:text-blue-500 mb-4 uppercase tracking-widest">01. Provisioning & Onboarding Automation</h4>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed mb-6">
+                                Architected a "Product-Led Growth" onboarding flow that automated clinic instance setup. This eliminated the manual intervention bottleneck, reducing Time-to-Value (TTV) for new practitioners by 95%.
+                            </p>
+                            <div class="flex gap-2">
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">AUTO_PROVISION</span>
+                                <span class="px-2 py-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-[10px] font-mono text-slate-600 dark:text-slate-300">TENANT_ISOLATION</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
+                            <h4 class="text-sm font-bold text-purple-600 dark:text-purple-500 mb-4 uppercase tracking-widest">02. Infrastructure Hardening</h4>
+                            <p class="text-slate-600 dark:text-slate-400 text-sm leading-relaxed">
+                                Remedied critical vulnerabilities in the legacy file ingestion system. Deployed a hardened storage abstraction layer ensuring PIPEDA-compliant data residency and encrypted S3 bucket isolation for clinic assets.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="bg-blue-600 rounded-lg p-6 md:p-12 text-white shadow-2xl">
+                    <div class="flex flex-col md:flex-row justify-between items-center gap-8 md:gap-12">
+                        <div class="max-w-md text-center md:text-left">
+                            <h3 class="text-3xl font-black mb-4 uppercase tracking-tighter">Verified Outcome</h3>
+                            <p class="text-blue-100 font-light leading-relaxed">
+                                Modernized the platform to achieve Product-Market Fit, leading to immediate customer acquisition and a successful exit to <strong>Jane.app</strong>.
+                            </p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-6 md:gap-12 text-center border-t md:border-t-0 md:border-l border-blue-400 pt-6 md:pt-0 md:pl-12 w-full md:w-auto">
+                            <div>
+                                <div class="text-6xl font-black">95%</div>
+                                <div class="text-[10px] uppercase font-bold tracking-widest text-blue-200 mt-2">TTV Reduction</div>
+                            </div>
+                            <div>
+                                <div class="text-6xl font-black">EXIT</div>
+                                <div class="text-[10px] uppercase font-bold tracking-widest text-blue-200 mt-2">Acquisition Ready</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16 pb-20">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Compliance_Note</div>
+                    <div class="md:col-span-2">
+                        <p class="text-sm text-slate-600 dark:text-slate-400 italic leading-relaxed">
+                            Infrastructure was optimized for PIPEDA compliance (Personal Information Protection and Electronic Documents Act). Architectural decisions prioritized the de-risking of technical due diligence, facilitating the eventual platform integration into the Jane.app ecosystem.
+                        </p>
+                    </div>
+                </section>
+
+            </div>
+        </article>
+    </main>
+
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+@import "tailwindcss";
+
+/* Sticky footer: body fills the full viewport height as a flex column */
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Tell TailwindCSS v4 to use the .dark class on <html> for dark: variants */
+@variant dark (&:where(.dark, .dark *));
+
+/* Font Awesome duotone SVG fill colors — themed via .dark class on <html> */
+.fa-dt-primary   { fill: #0f172a; }         /* slate-900 in light mode */
+.dark .fa-dt-primary   { fill: #f8fafc; }   /* slate-50  in dark mode  */
+.fa-dt-secondary { fill: #475569; opacity: 0.4; }        /* slate-600 in light mode */
+.dark .fa-dt-secondary { fill: #cbd5e1; opacity: 0.4; }  /* slate-300 in dark mode  */
+
+/* Tooltip — subtle opacity shift on the hovered/tapped target element */
+.tooltip-target-active {
+  opacity: 0.72;
+  transition: opacity 100ms ease;
+}

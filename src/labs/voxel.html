@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Technical Analysis: Deterministic Volumetric Data Orchestration via Rust/Tauri and WebGL.">
+    <meta name="keywords" content="Solutions Architect Rust Ruby, Rust Systems Performance Benchmarks, Memory-Safe Concurrency, WebGL Rust Architecture, Volumetric Data Orchestration">
+    <title>LAB-002-VOXEL | Ian R. McKenzie</title>
+    <style>
+        /* light-mode grid lines; dark overrides below */
+        .crp-grid { background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 40px 40px; }
+        .dark .crp-grid { background-image: linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px); background-size: 40px 40px; }
+    </style>
+    <script>
+      (function(){var p=localStorage.getItem('theme-preference');var d=document.documentElement;if(p==='light'){d.classList.remove('dark');}else if(p==='dark'){d.classList.add('dark');}else{if(!window.matchMedia('(prefers-color-scheme: light)').matches){d.classList.add('dark');}}})();
+    </script>
+    <link href="/style.css" rel="stylesheet" />
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-sans leading-relaxed crp-grid">
+
+    <main>
+        <article class="max-w-5xl mx-auto px-6 pt-4 md:pt-10 pb-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-x border-slate-200 dark:border-slate-800 shadow-2xl">
+
+            <header class="mb-20 border-b border-slate-200 dark:border-slate-800 pb-12">
+                <div class="flex flex-wrap items-center gap-3 mb-6">
+                    <div class="px-3 py-1 text-[10px] font-mono font-bold tracking-[0.3em] text-purple-600 dark:text-purple-400 border border-purple-500/30 rounded uppercase bg-purple-500/5">
+                        Lab_Status: Validated_Benchmark
+                    </div>
+                    <div class="px-3 py-1 text-[10px] font-mono font-bold tracking-[0.3em] text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700 rounded uppercase">
+                        REF: LAB-002-VOXEL
+                    </div>
+                </div>
+                <h1 class="text-4xl md:text-6xl font-black mb-8 leading-tight uppercase tracking-tighter">
+                    Deterministic <span class="text-purple-600 dark:text-purple-500">Volumetric</span> Orchestration
+                </h1>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-[11px] font-mono text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Role</span> Sole Architect</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Environment</span> Rust / WebGL</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Focus</span> Spatial Systems</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Status</span> Validated</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Load_Time</span> &lt; 450ms</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Relevance</span> 84 / 100</div>
+                </div>
+            </header>
+
+            <div class="space-y-24">
+
+                <!-- Stats Overview -->
+                <section class="grid md:grid-cols-3 gap-4 font-mono">
+                    <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4">
+                        <div class="text-[10px] text-slate-500 uppercase mb-2">Memory_Architecture</div>
+                        <div class="text-sm font-bold uppercase text-slate-800 dark:text-slate-100">TypedArray / Uint32</div>
+                    </div>
+                    <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4">
+                        <div class="text-[10px] text-slate-500 uppercase mb-2">Data_Transfer</div>
+                        <div class="text-sm font-bold uppercase text-slate-800 dark:text-slate-100">Zero-Copy Transferables</div>
+                    </div>
+                    <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-4">
+                        <div class="text-[10px] text-slate-500 uppercase mb-2">Compute_Efficiency</div>
+                        <div class="text-sm font-bold uppercase text-slate-800 dark:text-slate-100">Greedy Mesh / Worker-Offload</div>
+                    </div>
+                </section>
+
+                <!-- Architectural Framework -->
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Architectural_Framework</div>
+                    <div class="md:col-span-2 space-y-6">
+                        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-light">
+                            The core engine leverages a <strong>Deterministic u64 Seed-Based Generator</strong>. By calculating volumetric state from coordinates at runtime, the system maintains a sub-16ms render loop without the overhead of a global persistent database.
+                        </p>
+                        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+                            Modified states are managed via <strong>16KB Binary Snapshots</strong>. While the persistence layer avoids delta-encoding for simplicity, the I/O is gated by a dirty-flag logic on the Rust backend, ensuring write-operations only occur on state mutation.
+                        </p>
+                        <blockquote class="border-l-2 border-purple-400 dark:border-purple-900 pl-6 text-slate-500 dark:text-slate-400 italic text-sm leading-relaxed">
+                            An applied study in high-throughput spatial data management — benchmarking the orchestration of 16-bit bitmasked volumetric data across a <strong>Rust-to-WebGL bridge</strong>, utilizing zero-copy memory transfers and deterministic state generation.
+                        </blockquote>
+                    </div>
+                </section>
+
+                <!-- Systems Optimization -->
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Systems_Optimization</div>
+                    <div class="md:col-span-2">
+                        <ul class="space-y-4 font-mono text-[11px]">
+                            <li class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <span class="text-slate-500">Frustum_Culling:</span>
+                                <span class="text-slate-700 dark:text-slate-300">AABB vs Plane Extraction (JS)</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <span class="text-slate-500">Concurrency:</span>
+                                <span class="text-slate-700 dark:text-slate-300">Multi-threaded Worker Meshing</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <span class="text-slate-500">Serialization:</span>
+                                <span class="text-slate-700 dark:text-slate-300">MessagePack (rmp_serde)</span>
+                            </li>
+                            <li class="flex justify-between border-b border-slate-200 dark:border-slate-800 pb-2">
+                                <span class="text-slate-500">Navigation:</span>
+                                <span class="text-slate-700 dark:text-slate-300">Spring-Arm Ray-Marching</span>
+                            </li>
+                        </ul>
+                    </div>
+                </section>
+
+                <!-- Performance Benchmark -->
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Performance_Benchmark</div>
+                    <div class="md:col-span-2">
+                        <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-lg p-8 space-y-6">
+                            <h3 class="text-xs font-black text-slate-700 dark:text-slate-300 tracking-[0.3em] uppercase">Summary</h3>
+                            <p class="text-[10px] text-slate-600 dark:text-slate-500 leading-relaxed uppercase">
+                                This research validates that a single-architect pipeline can deploy high-fidelity spatial interfaces with production-grade memory safety (Rust) and sub-second initialization times. It serves as a prototype for <strong>Digital Twin Monitoring</strong> and <strong>Industrial Logistics Visualizers</strong>.
+                            </p>
+                            <div class="font-mono text-[10px] text-purple-600 dark:text-purple-400 space-y-1">
+                                <div>[SYSTEM_METRIC]: 4MB RAW VOXEL DATA PER 10^6 UNITS</div>
+                                <div>[RENDER_LOGIC]: BUFFER_GEOMETRY_MERGING_PER_CHUNK</div>
+                                <div>[LOD_STRATEGY]: RUST-BACKEND CALCULATED TIER_EVENTS</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Live Deployment -->
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16 pb-20">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Live_Deployment</div>
+                    <div class="md:col-span-2 space-y-8">
+                        <div class="cursor-not-allowed">
+                            <h4 class="text-xs font-black text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-widest">Voxel Engine Demo</h4>
+                            <a href="javascript:void(0)" target="_blank" rel="noopener noreferrer" class="text-purple-500 hover:text-purple-400 font-mono text-sm underline underline-offset-4 transition-colors opacity-70 pointer-events-none">
+                                [coming soon] <!--&rarr;-->
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </article>
+    </main>
+
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Technical whitepapers and advisory notes by Ian R. McKenzie — architecture deep-dives, industrial SEO analysis, and systems benchmarking.">
+    <meta name="keywords" content="Solutions Architect Rust Ruby, Zero-Trust Infrastructure Canada, Industrial Equipment SEO Advisory, Technical Whitepapers Architecture">
+    <meta name="robots" content="index, nofollow">
+    <meta name="language" content="en">
+    <title>Technical Articles & Whitepapers | Ian R. McKenzie</title>
+    <style>
+        /* background-image only — bg-color controlled by Tailwind on body */
+        .webdoc-bg { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23cbd5e1' fill-opacity='0.2'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+        .dark .webdoc-bg { background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%231e293b' fill-opacity='0.4'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4h4v-2h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C%2Fg%3E%3C%2Fg%3E%3C%2Fsvg%3E"); }
+    </style>
+    <script>
+      (function(){var p=localStorage.getItem('theme-preference');var d=document.documentElement;if(p==='light'){d.classList.remove('dark');}else if(p==='dark'){d.classList.add('dark');}else{if(!window.matchMedia('(prefers-color-scheme: light)').matches){d.classList.add('dark');}}})();
+    </script>
+    <link href="/style.css" rel="stylesheet" />
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-sans leading-relaxed webdoc-bg">
+
+    <main class="max-w-5xl mx-auto px-6 pt-4 md:pt-10 pb-20">
+        <header class="mb-20 border-b border-slate-200 dark:border-slate-800 pb-12">
+            <div class="flex flex-wrap items-center gap-3 mb-6">
+                <div class="inline-block px-3 py-1 text-[10px] font-mono font-bold tracking-[0.3em] text-slate-600 dark:text-slate-400 border border-slate-300 dark:border-slate-700 rounded uppercase bg-slate-100 dark:bg-slate-800">
+                    Content_Rotation: Active
+                </div>
+                <div class="inline-block px-3 py-1 text-[10px] font-mono font-bold tracking-[0.3em] text-blue-600 dark:text-blue-400 border border-blue-500/30 rounded uppercase bg-blue-500/5">
+                    Track: Blue / Green / Purple
+                </div>
+            </div>
+            <h1 class="text-5xl font-black mb-6 uppercase tracking-tighter">
+                Technical <span class="text-slate-500 dark:text-slate-400">Articles</span> &amp; Whitepapers
+            </h1>
+            <p class="text-xl text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed border-l-2 border-slate-300 dark:border-slate-700 pl-6">
+                Architectural analyses, industrial advisory notes, and systems benchmarks. Each post is categorized by strategic track and tethered to a documented fiscal or operational outcome.
+            </p>
+
+            <div class="mt-8 grid grid-cols-3 gap-4 max-w-lg text-[11px] font-mono uppercase tracking-widest">
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0"></span>
+                    <span class="text-slate-600 dark:text-slate-400">Blue — Architecture</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 flex-shrink-0"></span>
+                    <span class="text-slate-600 dark:text-slate-400">Green — Advisory</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-purple-500 flex-shrink-0"></span>
+                    <span class="text-slate-600 dark:text-slate-400">Purple — Research</span>
+                </div>
+            </div>
+        </header>
+
+        <div class="space-y-6">
+
+            <!-- POST 1 — Blue Track -->
+            <a href="articles/zero-trust-hipaa-saas-architecture.html"
+               class="group flex flex-col md:flex-row md:items-start gap-6 p-8 border border-slate-200 dark:border-slate-800 rounded hover:border-blue-500 dark:hover:border-blue-500 transition-all bg-white/60 dark:bg-slate-900/60 backdrop-blur-sm">
+                <div class="flex-shrink-0 flex items-center gap-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-500 mt-0.5"></span>
+                    <span class="text-[10px] font-mono font-bold tracking-[0.3em] text-blue-600 dark:text-blue-400 uppercase">ART-001-HIPAA</span>
+                </div>
+                <div class="flex-1">
+                    <div class="flex flex-wrap items-center gap-3 mb-3">
+                        <span class="text-[10px] font-mono text-slate-500 dark:text-slate-400 uppercase tracking-widest">Architecture &amp; Compliance</span>
+                        <span class="text-[10px] font-mono text-slate-400 dark:text-slate-500">2026-04-04</span>
+                    </div>
+                    <h2 class="text-xl font-black uppercase tracking-tight mb-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                        Zero-Trust by Default: Architecting HIPAA-Compliant SaaS for Acquisition
+                    </h2>
+                    <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">
+                        A systems-level walkthrough of provisioning a multi-tenant Rails platform to meet HIPAA technical safeguards, PIPEDA data residency constraints, and SOC2-adjacent audit readiness—without rewriting the product. The architectural decisions that made due-diligence straightforward.
+                    </p>
+                    <span class="inline-block mt-4 text-xs font-mono text-blue-600 dark:text-blue-400 uppercase tracking-widest group-hover:underline">Read Full Write-Up →</span>
+                </div>
+            </a>
+
+            <!-- SLOTS 2–4: Upcoming rotation placeholders -->
+            <div class="p-8 border border-dashed border-slate-200 dark:border-slate-800 rounded opacity-40">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-500"></span>
+                    <span class="text-[10px] font-mono font-bold tracking-[0.3em] text-slate-500 uppercase">ART-002-GREEN — Upcoming</span>
+                </div>
+                <p class="text-sm font-mono text-slate-500 uppercase tracking-widest">Industrial Search Leakage: A Regional Diagnostic for Heavy Equipment Rentals</p>
+            </div>
+
+            <div class="p-8 border border-dashed border-slate-200 dark:border-slate-800 rounded opacity-40">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-blue-400"></span>
+                    <span class="text-[10px] font-mono font-bold tracking-[0.3em] text-slate-500 uppercase">ART-003-BLUE/PURPLE — Upcoming</span>
+                </div>
+                <p class="text-sm font-mono text-slate-500 uppercase tracking-widest">Concurrent Ingestion at Scale: Rust vs. Ruby Benchmark for Event-Driven Pipelines</p>
+            </div>
+
+            <div class="p-8 border border-dashed border-slate-200 dark:border-slate-800 rounded opacity-40">
+                <div class="flex items-center gap-3 mb-3">
+                    <span class="w-2.5 h-2.5 rounded-full bg-green-400"></span>
+                    <span class="text-[10px] font-mono font-bold tracking-[0.3em] text-slate-500 uppercase">ART-004-GREEN — Upcoming</span>
+                </div>
+                <p class="text-sm font-mono text-slate-500 uppercase tracking-widest">State of Regional Industrial Digital Infrastructure: Atlantic Canada, 2026</p>
+            </div>
+
+        </div>
+
+        <footer class="mt-20 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <p class="text-xs font-mono text-slate-500 dark:text-slate-400 uppercase tracking-widest">
+                Content rotates on a Blue → Green → Blue/Purple → Green cycle. Full technical specifications available on request.
+            </p>
+        </footer>
+    </main>
+
+    <script type="module" src="/main.js"></script>
+</body>
+</html>
