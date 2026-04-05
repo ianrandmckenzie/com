@@ -53,7 +53,7 @@ Status Indicators: Use font-mono and small "pulsing" green indicators to signify
 
 - `seo-case-study.html` — ARCH-001-REV: Revenue Safety Net / Heavy Service SEO Engine
 - `jane-sites.html` — ARCH-002-CLINIC: Automated Scalability for Health-Tech Acquisition (Jane.app exit)
-- `failureunit.html` — ARCH-003-MEDIA: Media Sovereignty via Client-Side Virtualization + NostalgiaOS framework
+- `failureunit.html` — ARCH-003-MEDIA: Media Sovereignty via Client-Side Virtualization + Nostalgia_OS framework
 
 **Lab detail pages (Purple track):**
 
@@ -69,7 +69,7 @@ Clinic Sites: Architecture for HIPAA-compliant medical SaaS, acquired by Jane.ap
 
 Objektiv Digital: 1,000% lead-gen growth through automated SEO infrastructure.
 
-NostalgiaOS: Open-source UI framework exploring modularity and browser-side constraints.
+Nostalgia_OS: Open-source UI framework exploring modularity and browser-side constraints.
 
 Systems Research (Rust): Memory-safe graphical optimizations and spatial partitioning in concurrent environments.
 
