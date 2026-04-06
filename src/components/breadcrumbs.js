@@ -56,7 +56,7 @@ export function mountBreadcrumbs() {
       return `
         <li>
           <a href="${crumb.href}"
-             class="text-slate-500 dark:text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 font-mono text-[10px] uppercase tracking-widest transition-colors">
+             class="text-slate-600 dark:text-slate-50 hover:text-slate-800 dark:hover:text-white font-mono text-[10px] uppercase tracking-widest transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2">
             ${crumb.label}
           </a>
         </li>

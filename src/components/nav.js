@@ -17,6 +17,15 @@ const THEME_LABELS = { light: 'Light', dark: 'Dark' };
 const getThemeLabel = pref => THEME_LABELS[pref] ?? (pref === 'dark' ? 'Dark' : 'Light');
 
 export function mountNav() {
+  // Inject skip link once — pages already containing one (hardcoded audit pass) won't get a duplicate
+  if (!document.querySelector('a[href="#main-content"]')) {
+    const skip = document.createElement('a');
+    skip.href = '#main-content';
+    skip.className = 'sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-1/2 focus-visible:-translate-x-1/2 focus-visible:z-[100] focus-visible:px-6 focus-visible:py-3 focus-visible:bg-white dark:focus-visible:bg-slate-900 focus-visible:text-slate-900 dark:focus-visible:text-white focus-visible:border-2 focus-visible:border-blue-500 focus-visible:font-bold focus-visible:text-sm focus-visible:rounded focus-visible:shadow-2xl focus-visible:outline-none';
+    skip.textContent = 'Skip to main content';
+    document.body.insertBefore(skip, document.body.firstChild);
+  }
+
   const tooltip    = mountTooltip();
   const rawPath    = window.location.pathname.split('/').pop() || '';
   const filename   = rawPath.replace(/\.html$/, '') || 'index';
@@ -37,32 +46,32 @@ export function mountNav() {
     const mckenzieClass = isHomePage
       ? 'bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent'
       : isProofActive
-        ? 'text-blue-600 dark:text-blue-400'
+        ? 'text-blue-800 dark:text-blue-200'
         : isAdvisoryActive
-          ? 'text-green-600 dark:text-green-400'
+          ? 'text-green-800 dark:text-green-300'
           : isLabsActive
-            ? 'text-purple-600 dark:text-purple-400'
+            ? 'text-purple-700 dark:text-purple-200'
             : isArticlesActive
-              ? 'text-slate-600 dark:text-slate-400'
+              ? 'text-slate-600 dark:text-slate-300'
               : 'text-blue-500';
 
     const proofDesktop    = isProofActive
-      ? 'text-blue-600 dark:text-blue-400 border-b border-blue-600 dark:border-blue-400 pb-0.5 uppercase'
-      : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors uppercase';
+      ? 'text-blue-600 dark:text-blue-200 border-b border-blue-600 dark:border-blue-400 pb-0.5 uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2'
+      : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-200 transition-colors uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2';
     const advisoryDesktop = isAdvisoryActive
-      ? 'text-green-600 dark:text-green-400 border-b border-green-600 dark:border-green-400 pb-0.5 uppercase'
-      : 'text-slate-600 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors uppercase';
+      ? 'text-green-600 dark:text-green-300 border-b border-green-600 dark:border-green-400 pb-0.5 uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-500 focus-visible:outline-offset-2'
+      : 'text-slate-600 dark:text-slate-300 hover:text-green-700 dark:hover:text-green-300 transition-colors uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-500 focus-visible:outline-offset-2';
     const labsDesktop     = isLabsActive
-      ? 'text-purple-600 dark:text-purple-400 border-b border-purple-600 dark:border-purple-400 pb-0.5 uppercase'
-      : 'text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors uppercase';
+      ? 'text-purple-600 dark:text-purple-200 border-b border-purple-600 dark:border-purple-400 pb-0.5 uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500 focus-visible:outline-offset-2'
+      : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-200 transition-colors uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500 focus-visible:outline-offset-2';
     const articlesDesktop = isArticlesActive
-      ? 'text-slate-900 dark:text-white border-b border-slate-900 dark:border-white pb-0.5 uppercase'
-      : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors uppercase';
+      ? 'text-slate-900 dark:text-white border-b border-slate-900 dark:border-white pb-0.5 uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2'
+      : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2';
 
-    const proofMobile    = isProofActive    ? 'text-blue-600 dark:text-blue-400 uppercase'   : 'text-slate-600 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-400 transition-colors uppercase';
-    const advisoryMobile = isAdvisoryActive ? 'text-green-600 dark:text-green-400 uppercase'  : 'text-slate-600 dark:text-slate-400 hover:text-green-600 dark:hover:text-green-400 transition-colors uppercase';
-    const labsMobile     = isLabsActive     ? 'text-purple-600 dark:text-purple-400 uppercase' : 'text-slate-600 dark:text-slate-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors uppercase';
-    const articlesMobile = isArticlesActive ? 'text-slate-900 dark:text-white uppercase'       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors uppercase';
+    const proofMobile    = isProofActive    ? 'text-blue-600 dark:text-blue-400 uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2'   : 'text-slate-600 dark:text-slate-300 hover:text-blue-600 dark:hover:text-blue-200 transition-colors uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2';
+    const advisoryMobile = isAdvisoryActive ? 'text-green-600 dark:text-green-400 uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-500 focus-visible:outline-offset-2'  : 'text-slate-600 dark:text-slate-300 hover:text-green-700 dark:hover:text-green-300 transition-colors uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-green-500 focus-visible:outline-offset-2';
+    const labsMobile     = isLabsActive     ? 'text-purple-600 dark:text-purple-400 uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500 focus-visible:outline-offset-2' : 'text-slate-600 dark:text-slate-300 hover:text-purple-600 dark:hover:text-purple-200 transition-colors uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-purple-500 focus-visible:outline-offset-2';
+    const articlesMobile = isArticlesActive ? 'text-slate-900 dark:text-white uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2'       : 'text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white transition-colors uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2';
 
     header = document.createElement('header');
     header.id = 'site-header';
@@ -71,25 +80,25 @@ export function mountNav() {
     header.innerHTML = `
     <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
       <a href="/"
-         class="font-sans font-black text-lg tracking-tighter uppercase text-slate-900 dark:text-white hover:opacity-75 transition-opacity">
+         class="font-sans font-black text-lg tracking-tighter uppercase text-slate-900 dark:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2">
         Ian R. <span class="${mckenzieClass}">McKenzie</span>
       </a>
 
       <div class="flex items-center gap-3">
         <nav aria-label="Primary" class="hidden md:flex items-center gap-8 text-xs font-bold tracking-widest">
-          <a href="/case-studies" class="${proofDesktop}" ${isProofActive    ? '' : 'data-title="Case Studies & Outcomes"'}>The_Proof</a>
-          <a href="/consulting"   class="${advisoryDesktop}" ${isAdvisoryActive ? '' : 'data-title="Advisory & Strategy"'}>Advisory</a>
-          <a href="/labs"         class="${labsDesktop}" ${isLabsActive     ? '' : 'data-title="Experiments & Builds"'}>Research_Labs</a>
-          <!--<a href="/articles"     class="${articlesDesktop}" ${isArticlesActive ? '' : 'data-title="Whitepapers & Analyses"'}>Articles</a>-->
+          <a href="/case-studies" class="${proofDesktop}" ${isProofActive    ? 'aria-current="page"' : 'data-title="Case Studies & Outcomes"'}>The_Proof</a>
+          <a href="/consulting"   class="${advisoryDesktop}" ${isAdvisoryActive ? 'aria-current="page"' : 'data-title="Advisory & Strategy"'}>Advisory</a>
+          <a href="/labs"         class="${labsDesktop}" ${isLabsActive     ? 'aria-current="page"' : 'data-title="Experiments & Builds"'}>Research_Labs</a>
+          <!--<a href="/articles"     class="${articlesDesktop}" ${isArticlesActive ? 'aria-current="page"' : 'data-title="Whitepapers & Analyses"'}>Articles</a>-->
           <a href="/resume.pdf"
-             class="text-slate-900 dark:text-white border-b border-blue-500 pb-0.5 hover:border-slate-900 dark:hover:border-white transition-all uppercase" data-title="Download my résumé">RESUME_PDF</a>
+             class="text-slate-900 dark:text-white border-b border-blue-500 pb-0.5 hover:border-slate-900 dark:hover:border-white transition-all uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2" data-title="Download my résumé">RESUME_PDF</a>
         </nav>
 
         <button id="theme-toggle"
                 aria-label="Switch theme: currently ${getThemeLabel(currentPref)}"
                 title="Theme: ${getThemeLabel(currentPref)}"
                 data-title="Theme: ${getThemeLabel(currentPref)}"
-                class="p-2 rounded text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                class="p-2 rounded text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2">
           ${THEME_ICONS[currentPref]}
         </button>
 
@@ -97,7 +106,7 @@ export function mountNav() {
                 aria-label="Open menu"
                 aria-expanded="false"
                 aria-controls="nav-mobile-menu"
-                class="md:hidden p-2 -mr-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+                class="md:hidden p-2 -mr-2 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2">
           <svg class="nav-icon-open w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
           </svg>
@@ -111,11 +120,11 @@ export function mountNav() {
     <div id="nav-mobile-menu"
          class="hidden md:hidden border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95">
       <nav aria-label="Mobile" class="max-w-5xl mx-auto px-6 py-5 flex flex-col gap-5 text-xs font-bold tracking-widest">
-        <a href="/case-studies" class="${proofMobile}">The_Proof</a>
-        <a href="/consulting"   class="${advisoryMobile}">Advisory</a>
-        <a href="/labs"         class="${labsMobile}">Research_Labs</a>
-        <a href="/articles"     class="${articlesMobile}">Articles</a>
-        <a href="/resume.pdf"        class="text-slate-900 dark:text-white uppercase">RESUME_PDF</a>
+        <a href="/case-studies" class="${proofMobile}" ${isProofActive    ? 'aria-current="page"' : ''}>The_Proof</a>
+        <a href="/consulting"   class="${advisoryMobile}" ${isAdvisoryActive ? 'aria-current="page"' : ''}>Advisory</a>
+        <a href="/labs"         class="${labsMobile}" ${isLabsActive     ? 'aria-current="page"' : ''}>Research_Labs</a>
+        <a href="/articles"     class="${articlesMobile}" ${isArticlesActive ? 'aria-current="page"' : ''}>Articles</a>
+        <a href="/resume.pdf"   class="text-slate-900 dark:text-white uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2">RESUME_PDF</a>
       </nav>
     </div>
   `;
