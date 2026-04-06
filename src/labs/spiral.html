@@ -63,7 +63,7 @@
                     <div class="md:col-span-2 space-y-8">
 
                         <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
-                            <h4 class="text-sm font-bold text-purple-800 dark:text-purple-200 mb-4 uppercase tracking-widest">01. Mathematical Engine</h4>
+                            <h2 class="text-sm font-bold text-purple-800 dark:text-purple-200 mb-4 uppercase tracking-widest">01. Mathematical Engine</h2>
                             <p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-6">
                                 Each integer is mapped to a polar coordinate pair <em>(r, θ)</em>, where the angular position is derived from its index on the spiral and its radial distance from a tunable coefficient. A primality check runs against this index on every render cycle, applying distinct visual treatment—color, size, and glow—to prime-positioned nodes. Animated parameters continuously modulate the coefficient and rotation values, revealing the underlying geometric structure of the prime distribution dynamically.
                             </p>
@@ -76,7 +76,7 @@
                         </div>
 
                         <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
-                            <h4 class="text-sm font-bold text-purple-800 dark:text-purple-200 mb-4 uppercase tracking-widest">02. Defensive UI Architecture</h4>
+                            <h2 class="text-sm font-bold text-purple-800 dark:text-purple-200 mb-4 uppercase tracking-widest">02. Defensive UI Architecture</h2>
                             <p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-6">
                                 The control interface is engineered on a poka-yoke model: every user-facing parameter is bounded, validated, and clamped prior to propagation into the render pipeline. This prevents degenerate states—such as division-by-zero in the coordinate transform or render-frame stalls from out-of-range inputs—without exposing error states to the end user. The system was validated under sustained adversarial use, including rapid input cycling and extended uninterrupted sessions, with zero observed regressions.
                             </p>
@@ -88,7 +88,7 @@
                         </div>
 
                         <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
-                            <h4 class="text-sm font-bold text-purple-800 dark:text-purple-200 mb-4 uppercase tracking-widest">03. Cross-Platform Deployment</h4>
+                            <h2 class="text-sm font-bold text-purple-800 dark:text-purple-200 mb-4 uppercase tracking-widest">03. Cross-Platform Deployment</h2>
                             <p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-6">
                                 The Vanilla JS/Tailwind core is wrapped in a <strong>Tauri/Rust</strong> shell, enabling native binary distribution across macOS, Windows, and Linux from a single codebase. This architecture mirrors the hybrid deployment model used in enterprise desktop tooling—keeping the rendering layer lightweight and web-native while leveraging Rust's memory safety guarantees for the application host. The web build additionally passed all Lighthouse audit categories at 100, confirming optimal asset delivery, accessibility compliance, and runtime performance independent of the native wrapper.
                             </p>

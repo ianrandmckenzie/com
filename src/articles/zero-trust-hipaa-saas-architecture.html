@@ -74,7 +74,7 @@
                             The business context: a prospective acquirer had expressed acquisition interest contingent on two conditions being met. First, the platform had to demonstrate automated self-serve onboarding (Product-Led Growth readiness). Second, it had to pass a technical security review commensurate with HIPAA Business Associate Agreement obligations. Neither condition was met at the start of the engagement.
                         </p>
                         <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-6 rounded">
-                            <h4 class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-4 uppercase tracking-widest">Documented Failure States at Engagement Onset</h4>
+                            <h3 class="text-xs font-bold text-slate-700 dark:text-slate-300 mb-4 uppercase tracking-widest">Documented Failure States at Engagement Onset</h3>
                             <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300 font-mono">
                                 <li class="flex items-start gap-3"><span class="text-red-500 mt-0.5 flex-shrink-0">✗</span> PHI stored in shared tenant tables with no row-level isolation</li>
                                 <li class="flex items-start gap-3"><span class="text-red-500 mt-0.5 flex-shrink-0">✗</span> S3 buckets using global ACL policies; no per-clinic prefix isolation</li>
@@ -92,7 +92,7 @@
                     <div class="md:col-span-2 space-y-8">
 
                         <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
-                            <h4 class="text-sm font-bold text-blue-600 dark:text-blue-500 mb-4 uppercase tracking-widest">01. Tenant Isolation &amp; Data Boundary Enforcement</h4>
+                            <h3 class="text-sm font-bold text-blue-600 dark:text-blue-500 mb-4 uppercase tracking-widest">01. Tenant Isolation &amp; Data Boundary Enforcement</h3>
                             <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
                                 Provisioned a row-level security layer at the ActiveRecord model boundary. Every PHI-bearing table received a non-nullable <code class="font-mono text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded">clinic_id</code> foreign key enforced at the database constraint level—not only in application code. Default scopes were replaced with explicit, audited scope chains to prevent accidental cross-tenant data exposure on any query path.
                             </p>
@@ -104,7 +104,7 @@
                         </div>
 
                         <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
-                            <h4 class="text-sm font-bold text-blue-600 dark:text-blue-500 mb-4 uppercase tracking-widest">02. S3 Per-Clinic Prefix Isolation &amp; PIPEDA Residency</h4>
+                            <h3 class="text-sm font-bold text-blue-600 dark:text-blue-500 mb-4 uppercase tracking-widest">02. S3 Per-Clinic Prefix Isolation &amp; PIPEDA Residency</h3>
                             <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
                                 Re-architected the S3 storage layer to enforce per-clinic bucket prefix segmentation. Presigned URL generation was scoped to the authenticated clinic context via a server-side token exchange, eliminating direct enumerable object access. Data residency was enforced by pinning the bucket region to <code class="font-mono text-xs bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-1.5 py-0.5 rounded">ca-central-1</code> (PIPEDA) with lifecycle policies preventing replication or cross-region transfers.
                             </p>
@@ -116,7 +116,7 @@
                         </div>
 
                         <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
-                            <h4 class="text-sm font-bold text-blue-600 dark:text-blue-500 mb-4 uppercase tracking-widest">03. PLG Provisioning Engine &amp; Audit Trail</h4>
+                            <h3 class="text-sm font-bold text-blue-600 dark:text-blue-500 mb-4 uppercase tracking-widest">03. PLG Provisioning Engine &amp; Audit Trail</h3>
                             <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
                                 Orchestrated a self-serve clinic provisioning flow as a background-job pipeline. The pipeline handled schema initialization, default role seeding, S3 prefix scaffolding, and welcome notification dispatch — without developer intervention. In parallel, a lightweight audit log was provisioned to track PHI access events, satisfying the HIPAA "Access Control" and "Audit Controls" technical safeguards (§164.312(a)(1) and §164.312(b)).
                             </p>
