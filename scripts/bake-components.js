@@ -27,29 +27,10 @@ const ICON_SYSTEM = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 64
   </svg>`;
 
 // ---------------------------------------------------------------------------
-// Footer config (kept in sync with src/components/footer.js)
-// ---------------------------------------------------------------------------
-const FOOTER_CONFIG = {
-  'index.html':        { tagline: 'Integrity • Stability • Performance',  byline: '© 2026 Ian R. McKenzie | All Rights Reserved' },
-  '':                  { tagline: 'Integrity • Stability • Performance',  byline: '© 2026 Ian R. McKenzie | All Rights Reserved' },
-  'case-studies.html': { tagline: 'Integrity • Stability • Performance',  byline: '© 2026 Ian R. McKenzie | Specialized Solutions Architecture' },
-  'case-study.html':   { tagline: 'End_of_Document',                      byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
-  'jane-sites.html':   { tagline: 'End_of_Document',                      byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
-  'failureunit.html':  { tagline: 'End_of_Document',                      byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
-  'seo-case-study.html':{ tagline: 'End_of_Document',                     byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
-  'consulting.html':   { tagline: 'Stability • Performance • Revenue',    byline: '© 2026 Ian R. McKenzie | Specialized Technical Solutions Architecture' },
-  'labs.html':         { tagline: 'Rigor • Research • Precision',         byline: '© 2026 Ian R. McKenzie | Systems Research &amp; Development' },
-  'spiral.html':       { tagline: 'End_of_Lab_Write-Up',                  byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
-  'voxel.html':        { tagline: 'End_of_Lab_Write-Up',                  byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
-  'articles.html':     { tagline: 'Integrity • Stability • Performance',  byline: '© 2026 Ian R. McKenzie | All Rights Reserved' },
-};
-const FOOTER_DEFAULT = FOOTER_CONFIG[''];
-
-// ---------------------------------------------------------------------------
 // Nav HTML builder
 // ---------------------------------------------------------------------------
 function buildNavHtml(filename, isArticlesSubdir) {
-  const isProofActive    = ['case-studies.html', 'case-study.html', 'jane-sites.html', 'failureunit.html', 'seo-case-study.html'].includes(filename);
+  const isProofActive    = ['case-studies.html', 'jane-sites.html', 'failureunit.html', 'seo-case-study.html'].includes(filename);
   const isAdvisoryActive = filename === 'consulting.html';
   const isLabsActive     = ['labs.html', 'spiral.html', 'voxel.html'].includes(filename);
   const isArticlesActive = filename === 'articles.html' || isArticlesSubdir;
@@ -138,16 +119,77 @@ function buildNavHtml(filename, isArticlesSubdir) {
 }
 
 // ---------------------------------------------------------------------------
-// Footer HTML builder
+// Breadcrumb builder — auto-derives trail from file path + <meta name="bc-label">
 // ---------------------------------------------------------------------------
+const SECTION_LABELS = {
+  'case-studies': 'The_Proof',
+  'consulting':   'Advisory',
+  'labs':         'Research_Labs',
+  'articles':     'Articles',
+};
+
+function buildBreadcrumbHtml(rel, htmlContent) {
+  // Skip files in legacy html/ subtree
+  if (rel.startsWith('html/') || rel.startsWith('html\\')) return '';
+
+  // Current page label from meta tag — if absent, no breadcrumb
+  const labelMatch = htmlContent.match(/<meta\s+name="bc-label"\s+content="([^"]+)"/);
+  if (!labelMatch) return '';
+  const currentLabel = labelMatch[1];
+
+  // Build URL path from relative file path (e.g. "case-studies/jane-sites.html" → "/case-studies/jane-sites")
+  const urlPath  = '/' + rel.replace(/\.html$/, '').replace(/\/index$/, '').replace(/\\/g, '/');
+  const segments = urlPath.replace(/^\//, '').split('/').filter(Boolean);
+
+  const crumbs = [{ label: 'Home', href: '/' }];
+  for (let i = 0; i < segments.length; i++) {
+    const seg    = segments[i];
+    const isLast = i === segments.length - 1;
+    if (isLast) {
+      crumbs.push({ label: currentLabel });
+    } else {
+      crumbs.push({ label: SECTION_LABELS[seg] ?? seg, href: '/' + segments.slice(0, i + 1).join('/') });
+    }
+  }
+
+  const items = crumbs.map((crumb, i) => {
+    if (i === crumbs.length - 1) {
+      return `<li aria-current="page"><span class="text-slate-700 dark:text-slate-300 font-mono text-[10px] uppercase tracking-widest">${crumb.label}</span></li>`;
+    }
+    return `<li><a href="${crumb.href}" class="text-slate-600 dark:text-slate-50 hover:text-slate-800 dark:hover:text-white font-mono text-[10px] uppercase tracking-widest transition-colors">${crumb.label}</a></li><li aria-hidden="true" class="text-slate-400 dark:text-slate-700 font-mono text-[10px] select-none">/</li>`;
+  }).join('');
+
+  return `<nav id="site-breadcrumbs" aria-label="Breadcrumb" class="bg-slate-50 dark:bg-black border-b border-slate-200 dark:border-slate-700"><div class="max-w-5xl mx-auto px-6 py-2.5"><ol class="flex items-center gap-2 flex-wrap" role="list">${items}</ol></div></nav>`;
+}
+
+// ---------------------------------------------------------------------------
+// Footer builder (kept in sync with src/components/footer.js)
+// ---------------------------------------------------------------------------
+const FOOTER_CONFIG = {
+  'index':          { tagline: 'Integrity • Stability • Performance',  byline: '© 2026 Ian R. McKenzie | All Rights Reserved' },
+  '':               { tagline: 'Integrity • Stability • Performance',  byline: '© 2026 Ian R. McKenzie | All Rights Reserved' },
+  'case-studies':   { tagline: 'Integrity • Stability • Performance',  byline: '© 2026 Ian R. McKenzie | Specialized Solutions Architecture' },
+  'case-study':     { tagline: 'End_of_Document',                      byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
+  'jane-sites':     { tagline: 'End_of_Document',                      byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
+  'failureunit':    { tagline: 'End_of_Document',                      byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
+  'seo-case-study': { tagline: 'End_of_Document',                      byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
+  'consulting':     { tagline: 'Stability • Performance • Revenue',    byline: '© 2026 Ian R. McKenzie | Specialized Technical Solutions Architecture' },
+  'labs':           { tagline: 'Rigor • Research • Precision',         byline: '© 2026 Ian R. McKenzie | Systems Research &amp; Development' },
+  'spiral':         { tagline: 'End_of_Lab_Write-Up',                  byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
+  'voxel':          { tagline: 'End_of_Lab_Write-Up',                  byline: 'Ian R. McKenzie | Senior Solutions Architect | Canada &amp; USA Operations' },
+};
+
+const FOOTER_DEFAULT = FOOTER_CONFIG[''];
+
 function buildFooterHtml(filename) {
-  const config = FOOTER_CONFIG[filename] ?? FOOTER_DEFAULT;
+  const slug   = filename.replace(/\.html$/, '');
+  const config = FOOTER_CONFIG[slug] ?? FOOTER_DEFAULT;
   return `<footer id="site-footer" class="py-20 border-t border-slate-200 dark:border-slate-700 text-center bg-slate-50 dark:bg-black px-3">
-    <div class="text-slate-600 dark:text-slate-300 text-[10px] font-mono tracking-[0.4em] uppercase mb-4">
-      ${config.tagline}
-    </div>
-    <p class="text-slate-600 dark:text-slate-300 text-xs italic">${config.byline}</p>
-  </footer>`;
+  <div class="text-slate-600 dark:text-slate-300 text-[10px] font-mono tracking-[0.4em] uppercase mb-4">
+    ${config.tagline}
+  </div>
+  <p class="text-slate-600 dark:text-slate-300 text-xs italic">${config.byline}</p>
+</footer>`;
 }
 
 // ---------------------------------------------------------------------------
@@ -162,16 +204,28 @@ function processFile(filePath) {
     return;
   }
 
-  const rel             = relative(docsDir, filePath);            // e.g. "articles/zero-trust-…html"
-  const parts           = rel.split('/');
-  const filename        = parts[parts.length - 1];               // e.g. "zero-trust-…html"
+  const rel              = relative(docsDir, filePath);            // e.g. "articles/zero-trust-…html"
+  const parts            = rel.split(/[/\\]/);
+  const filename         = parts[parts.length - 1];               // e.g. "zero-trust-…html"
   const isArticlesSubdir = parts.length > 1 && parts[0] === 'articles';
 
-  const navHtml    = buildNavHtml(filename, isArticlesSubdir);
-  const footerHtml = buildFooterHtml(filename);
+  const navHtml        = buildNavHtml(filename, isArticlesSubdir);
+  const breadcrumbHtml = buildBreadcrumbHtml(rel, html);
+  const footerHtml     = buildFooterHtml(filename);
 
-  // Insert nav right after <body …>
-  html = html.replace(/(<body[^>]*>)/, `$1\n${navHtml}`);
+  // Pre-set body padding-top to nav height (~68px) to prevent CLS before JS initialises
+  html = html.replace(/(<body\b)([^>]*)(>)/, (_, open, attrs, close) => {
+    if (/\bstyle=/.test(attrs)) {
+      return `${open}${attrs.replace(/style="/, 'style="padding-top:68px;')}${close}`;
+    }
+    return `${open}${attrs} style="padding-top:68px"${close}`;
+  });
+
+  // Insert nav (+ breadcrumbs where applicable) right after <body …>
+  const afterBody = breadcrumbHtml
+    ? `\n${navHtml}\n${breadcrumbHtml}`
+    : `\n${navHtml}`;
+  html = html.replace(/(<body[^>]*>)/, `$1${afterBody}`);
 
   // Insert footer right before </body>
   html = html.replace(/<\/body>/, `${footerHtml}\n</body>`);
@@ -184,6 +238,6 @@ function processFile(filePath) {
 // Main
 // ---------------------------------------------------------------------------
 const files = globSync('**/*.html', { cwd: docsDir, absolute: true });
-console.log(`\nBaking nav + footer into ${files.length} HTML file(s) in docs/…`);
+console.log(`\nBaking nav into ${files.length} HTML file(s) in docs/…`);
 files.forEach(processFile);
 console.log('Done.\n');

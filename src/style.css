@@ -15,9 +15,3 @@ body {
 .dark .fa-dt-primary   { fill: #f8fafc; }   /* slate-50  in dark mode  */
 .fa-dt-secondary { fill: #475569; opacity: 0.4; }        /* slate-600 in light mode */
 .dark .fa-dt-secondary { fill: #cbd5e1; opacity: 0.4; }  /* slate-300 in dark mode  */
-
-/* Tooltip — subtle opacity shift on the hovered/tapped target element */
-.tooltip-target-active {
-  opacity: 0.72;
-  transition: opacity 100ms ease;
-}

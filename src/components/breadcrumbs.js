@@ -1,49 +1,38 @@
-// Map every non-home page filename → its breadcrumb trail.
-// The last entry has no href (it is the current page).
-const CRUMB_MAP = {
-  'case-studies': [
-    { label: 'Home',      href: '/' },
-    { label: 'The_Proof' },
-  ],
-  'seo-case-study': [
-    { label: 'Home',      href: '/' },
-    { label: 'The_Proof', href: '/case-studies' },
-    { label: 'Revenue Safety Net' },
-  ],
-  'jane-sites': [
-    { label: 'Home',      href: '/' },
-    { label: 'The_Proof', href: '/case-studies' },
-    { label: 'Jane.app Acquisition' },
-  ],
-  'failureunit': [
-    { label: 'Home',      href: '/' },
-    { label: 'The_Proof', href: '/case-studies' },
-    { label: 'Failure Unit' },
-  ],
-  'consulting': [
-    { label: 'Home',     href: '/' },
-    { label: 'Advisory' },
-  ],
-  'labs': [
-    { label: 'Home',         href: '/' },
-    { label: 'Research_Labs' },
-  ],
-  'spiral': [
-    { label: 'Home',          href: '/' },
-    { label: 'Research_Labs', href: '/labs' },
-    { label: 'Prime Spiral' },
-  ],
-  'voxel': [
-    { label: 'Home',          href: '/' },
-    { label: 'Research_Labs', href: '/labs' },
-    { label: 'Voxel Engine' },
-  ],
+// Section-level slug → breadcrumb label. Add one entry per top-level section.
+// This is the ONLY place to maintain section labels; individual page labels
+// come from <meta name="bc-label" content="…"> in each HTML file.
+const SECTION_LABELS = {
+  'case-studies': 'The_Proof',
+  'consulting':   'Advisory',
+  'labs':         'Research_Labs',
+  'articles':     'Articles',
 };
 
 export function mountBreadcrumbs() {
-  const filename = window.location.pathname.split('/').pop().replace(/\.html$/, '') || 'index';
-  const crumbs = CRUMB_MAP[filename];
-  if (!crumbs) return;
+  // Skip if already baked by the post-build script
+  if (document.getElementById('site-breadcrumbs')) return;
+
+  const pathname = window.location.pathname.replace(/\.html$/, '');
+
+  // No breadcrumb on home or legacy html/ routes
+  if (pathname === '/' || pathname === '' || pathname.startsWith('/html/')) return;
+
+  // Current page label from meta tag — if absent, no breadcrumb
+  const currentLabel = document.querySelector('meta[name="bc-label"]')?.content;
+  if (!currentLabel) return;
+
+  const segments = pathname.replace(/^\//, '').split('/').filter(Boolean);
+
+  const crumbs = [{ label: 'Home', href: '/' }];
+  for (let i = 0; i < segments.length; i++) {
+    const seg    = segments[i];
+    const isLast = i === segments.length - 1;
+    if (isLast) {
+      crumbs.push({ label: currentLabel });
+    } else {
+      crumbs.push({ label: SECTION_LABELS[seg] ?? seg, href: '/' + segments.slice(0, i + 1).join('/') });
+    }
+  }
 
   const items = crumbs
     .map((crumb, i) => {
