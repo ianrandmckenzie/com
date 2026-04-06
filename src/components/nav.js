@@ -123,7 +123,7 @@ export function mountNav() {
         <a href="/case-studies" class="${proofMobile}" ${isProofActive    ? 'aria-current="page"' : ''}>The_Proof</a>
         <a href="/consulting"   class="${advisoryMobile}" ${isAdvisoryActive ? 'aria-current="page"' : ''}>Advisory</a>
         <a href="/labs"         class="${labsMobile}" ${isLabsActive     ? 'aria-current="page"' : ''}>Research_Labs</a>
-        <a href="/articles"     class="${articlesMobile}" ${isArticlesActive ? 'aria-current="page"' : ''}>Articles</a>
+        <!--<a href="/articles"     class="${articlesMobile}" ${isArticlesActive ? 'aria-current="page"' : ''}>Articles</a>-->
         <a href="/resume.pdf"   class="text-slate-900 dark:text-white uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2">RESUME_PDF</a>
       </nav>
     </div>
