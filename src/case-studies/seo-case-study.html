@@ -18,29 +18,31 @@
 </head>
 <body class="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-sans leading-relaxed webdoc-bg">
 
-    <main>
+    <a href="#main-content" class="sr-only focus-visible:not-sr-only focus-visible:fixed focus-visible:top-4 focus-visible:left-1/2 focus-visible:-translate-x-1/2 focus-visible:z-[100] focus-visible:px-6 focus-visible:py-3 focus-visible:bg-white dark:focus-visible:bg-slate-900 focus-visible:text-slate-900 dark:focus-visible:text-white focus-visible:border-2 focus-visible:border-blue-500 focus-visible:font-bold focus-visible:text-sm focus-visible:rounded focus-visible:shadow-2xl focus-visible:outline-none">Skip to main content</a>
+
+    <main id="main-content">
         <article class="max-w-5xl mx-auto px-6 pt-4 md:pt-10 pb-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-x border-slate-200 dark:border-slate-800 shadow-2xl">
             <header class="mb-20 border-b border-slate-200 dark:border-slate-800 pb-12">
-                <div class="inline-block px-3 py-1 mb-6 text-[10px] font-mono font-bold tracking-[0.3em] text-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-700 rounded uppercase bg-blue-50 dark:bg-blue-950/40">
+                <div class="inline-block px-3 py-1 mb-6 text-[10px] font-mono font-bold tracking-[0.3em] text-blue-900 dark:text-blue-200 border border-blue-200 dark:border-blue-700 rounded uppercase bg-blue-50 dark:bg-blue-950/40">
                     REF: ARCH-001-REV
                 </div>
                 <h1 class="text-4xl md:text-6xl font-black mb-8 leading-tight uppercase tracking-tighter">
-                    Architecting <span class="text-blue-600 dark:text-blue-500">Revenue Stability</span> for Volatile Service Markets
+                    Architecting <span class="text-blue-600 dark:text-blue-400">Revenue Stability</span> for Volatile Service Markets
                 </h1>
-                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-[11px] font-mono text-slate-600 dark:text-slate-300 uppercase tracking-widest">
-                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Role</span> Principal Architect</div>
-                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Environment</span> Ruby / Linux</div>
-                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Focus</span> SEO / Lead-Gen</div>
-                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Impact</span> 1,000% Growth</div>
-                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Load_Time</span> &lt; 500ms</div>
-                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-400 font-semibold">Relevance</span> 97 / 100</div>
+                <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-[11px] font-mono text-slate-600 dark:text-slate-50 uppercase tracking-widest">
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-300 font-semibold">Role</span> Principal Architect</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-300 font-semibold">Environment</span> Ruby / Linux</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-300 font-semibold">Focus</span> SEO / Lead-Gen</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-300 font-semibold">Impact</span> 1,000% Growth</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-300 font-semibold">Load_Time</span> &lt; 500ms</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-300 font-semibold">Relevance</span> 97 / 100</div>
                 </div>
             </header>
 
             <div class="space-y-24">
 
-                <section class="grid md:grid-cols-3 gap-12">
-                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">The_Situation</div>
+                <section class="grid md:grid-cols-3 gap-12" aria-labelledby="the-situation">
+                    <h2 id="the-situation" class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">The_Situation</h2>
                     <div class="md:col-span-2 space-y-6">
                         <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-light border-l-2 border-blue-300 dark:border-blue-800 pl-6">
                             A regional heavy-service firm was 90% dependent on high-friction municipal tenders. This created a single point of failure: during contract lulls, fixed overhead remained constant while revenue stalled.
@@ -51,12 +53,12 @@
                     </div>
                 </section>
 
-                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16">
-                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Implementation</div>
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16" aria-labelledby="implementation">
+                    <h2 id="implementation" class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Implementation</h2>
                     <div class="md:col-span-2 space-y-8">
                         <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
-                            <h4 class="text-sm font-bold text-blue-600 dark:text-blue-500 mb-4 uppercase tracking-widest">01. Infrastructure Optimization</h4>
-                            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed mb-6">
+                            <h3 class="text-sm font-bold text-blue-800 dark:text-blue-200 mb-4 uppercase tracking-widest">01. Infrastructure Optimization</h3>
+                            <p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed mb-6">
                                 Built on WordPress and Elementor with a carefully tuned stack of plugins and server configuration, the site was engineered to load in under half a second. Fast load times were critical for converting visitors searching for emergency services on their phones.
                             </p>
                             <div class="flex gap-2">
@@ -67,37 +69,37 @@
                         </div>
 
                         <div class="bg-slate-100 dark:bg-slate-950 p-8 border border-slate-200 dark:border-slate-800 rounded">
-                            <h4 class="text-sm font-bold text-purple-600 dark:text-purple-500 mb-4 uppercase tracking-widest">02. Semantic SEO Engineering</h4>
-                            <p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed">
+                            <h3 class="text-sm font-bold text-purple-800 dark:text-purple-200 mb-4 uppercase tracking-widest">02. Semantic SEO Engineering</h3>
+                            <p class="text-slate-700 dark:text-slate-300 text-sm leading-relaxed">
                                 Instead of generic keyword stuffing, I architected a semantic data model that mapped local service clusters to high-intent "Emergency Repair" queries. This captured regional search dominance without recurring PPC expenditures. Alongside an industry copywriter and communicator with business owner sign-off, we further established authority and customer usability with impactful information for tree maintenance.
                             </p>
                         </div>
                     </div>
                 </section>
 
-                <section class="bg-blue-600 rounded-lg p-6 md:p-12 text-white shadow-2xl">
+                <section class="bg-blue-800 rounded-lg p-6 md:p-12 text-white shadow-2xl" aria-labelledby="verified-outcome">
                     <div class="flex flex-col lg:flex-row justify-between items-center gap-8 lg:gap-12">
                         <div class="max-w-md text-center lg:text-left">
-                            <h3 class="text-3xl font-black mb-4 uppercase tracking-tighter">Verified Outcome</h3>
-                            <p class="text-blue-100 font-light leading-relaxed">
+                            <h2 id="verified-outcome" class="text-3xl font-black mb-4 uppercase tracking-tighter">Verified Outcome</h2>
+                            <p class="text-white font-light leading-relaxed">
                                 The system transitioned the client from B2B contract dependency to a diversified model with 5+ years of uninterrupted growth.
                             </p>
                         </div>
                         <div class="grid grid-cols-2 gap-6 lg:gap-12 text-center border-t lg:border-t-0 lg:border-l border-blue-400 pt-6 lg:pt-0 lg:pl-12 w-full lg:w-auto">
                             <div>
                                 <div class="text-6xl font-black">10x</div>
-                                <div class="text-[10px] uppercase font-bold tracking-widest text-blue-200 mt-2">Lead Volume</div>
+                                <div class="text-xs uppercase font-bold tracking-widest text-white mt-2">Lead Volume</div>
                             </div>
                             <div>
                                 <div class="text-6xl font-black">0$</div>
-                                <div class="text-[10px] uppercase font-bold tracking-widest text-blue-200 mt-2">Ad Spend</div>
+                                <div class="text-xs uppercase font-bold tracking-widest text-white mt-2">Ad Spend</div>
                             </div>
                         </div>
                     </div>
                 </section>
 
-                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16 pb-20">
-                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Compliance</div>
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16 pb-20" aria-labelledby="compliance">
+                    <h2 id="compliance" class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Compliance</h2>
                     <div class="md:col-span-2">
                         <p class="text-sm text-slate-600 dark:text-slate-300 italic leading-relaxed">
                             Compliance Note: Lead ingestion was architected to meet data residency and privacy standards. All PII (Personally Identifiable Information) was handled via encrypted storage protocols, exceeding regional compliance standards for small-to-medium enterprise (SME) infrastructure.

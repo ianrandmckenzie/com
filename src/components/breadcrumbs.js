@@ -1,47 +1,47 @@
 // Map every non-home page filename → its breadcrumb trail.
 // The last entry has no href (it is the current page).
 const CRUMB_MAP = {
-  'case-studies.html': [
-    { label: 'Home',      href: '/index.html' },
+  'case-studies': [
+    { label: 'Home',      href: '/' },
     { label: 'The_Proof' },
   ],
-  'seo-case-study.html': [
-    { label: 'Home',      href: '/index.html' },
-    { label: 'The_Proof', href: '/case-studies.html' },
+  'seo-case-study': [
+    { label: 'Home',      href: '/' },
+    { label: 'The_Proof', href: '/case-studies' },
     { label: 'Revenue Safety Net' },
   ],
-  'jane-sites.html': [
-    { label: 'Home',      href: '/index.html' },
-    { label: 'The_Proof', href: '/case-studies.html' },
+  'jane-sites': [
+    { label: 'Home',      href: '/' },
+    { label: 'The_Proof', href: '/case-studies' },
     { label: 'Jane.app Acquisition' },
   ],
-  'failureunit.html': [
-    { label: 'Home',      href: '/index.html' },
-    { label: 'The_Proof', href: '/case-studies.html' },
+  'failureunit': [
+    { label: 'Home',      href: '/' },
+    { label: 'The_Proof', href: '/case-studies' },
     { label: 'Failure Unit' },
   ],
-  'consulting.html': [
-    { label: 'Home',     href: '/index.html' },
+  'consulting': [
+    { label: 'Home',     href: '/' },
     { label: 'Advisory' },
   ],
-  'labs.html': [
-    { label: 'Home',         href: '/index.html' },
+  'labs': [
+    { label: 'Home',         href: '/' },
     { label: 'Research_Labs' },
   ],
-  'spiral.html': [
-    { label: 'Home',          href: '/index.html' },
-    { label: 'Research_Labs', href: '/labs.html' },
+  'spiral': [
+    { label: 'Home',          href: '/' },
+    { label: 'Research_Labs', href: '/labs' },
     { label: 'Prime Spiral' },
   ],
-  'voxel.html': [
-    { label: 'Home',          href: '/index.html' },
-    { label: 'Research_Labs', href: '/labs.html' },
+  'voxel': [
+    { label: 'Home',          href: '/' },
+    { label: 'Research_Labs', href: '/labs' },
     { label: 'Voxel Engine' },
   ],
 };
 
 export function mountBreadcrumbs() {
-  const filename = window.location.pathname.split('/').pop() || 'index.html';
+  const filename = window.location.pathname.split('/').pop().replace(/\.html$/, '') || 'index';
   const crumbs = CRUMB_MAP[filename];
   if (!crumbs) return;
 

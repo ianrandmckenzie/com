@@ -87,17 +87,17 @@ function buildNavHtml(filename, isArticlesSubdir) {
 
   return `<header id="site-header" class="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border-b border-slate-200 dark:border-slate-700">
     <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-      <a href="/index.html"
+      <a href="/"
          class="font-sans font-black text-lg tracking-tighter uppercase text-slate-900 dark:text-white hover:opacity-75 transition-opacity">
         Ian R. <span class="${mckenzieClass}">McKenzie</span>
       </a>
 
       <div class="flex items-center gap-3">
         <nav aria-label="Primary" class="hidden md:flex items-center gap-8 text-xs font-bold tracking-widest">
-          <a href="/case-studies.html" class="${proofDesktop}"${isProofActive    ? '' : ' data-title="Case studies &amp; outcomes"'}>The_Proof</a>
-          <a href="/consulting.html"   class="${advisoryDesktop}"${isAdvisoryActive ? '' : ' data-title="Advisory &amp; strategy"'}>Advisory</a>
-          <a href="/labs.html"         class="${labsDesktop}"${isLabsActive     ? '' : ' data-title="Experiments &amp; builds"'}>Research_Labs</a>
-          <!--<a href="/articles.html"     class="${articlesDesktop}"${isArticlesActive ? '' : ' data-title="Whitepapers &amp; analyses"'}>Articles</a>-->
+          <a href="/case-studies" class="${proofDesktop}"${isProofActive    ? '' : ' data-title="Case studies &amp; outcomes"'}>The_Proof</a>
+          <a href="/consulting"   class="${advisoryDesktop}"${isAdvisoryActive ? '' : ' data-title="Advisory &amp; strategy"'}>Advisory</a>
+          <a href="/labs"         class="${labsDesktop}"${isLabsActive     ? '' : ' data-title="Experiments &amp; builds"'}>Research_Labs</a>
+          <!--<a href="/articles"     class="${articlesDesktop}"${isArticlesActive ? '' : ' data-title="Whitepapers &amp; analyses"'}>Articles</a>-->
           <a href="/resume.pdf"
              class="text-slate-900 dark:text-white border-b border-blue-500 pb-0.5 hover:border-slate-900 dark:hover:border-white transition-all uppercase" data-title="Download my résumé">RESUME_PDF</a>
         </nav>
@@ -127,10 +127,10 @@ function buildNavHtml(filename, isArticlesSubdir) {
     <div id="nav-mobile-menu"
          class="hidden md:hidden border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95">
       <nav aria-label="Mobile" class="max-w-5xl mx-auto px-6 py-5 flex flex-col gap-5 text-xs font-bold tracking-widest">
-        <a href="/case-studies.html" class="${proofMobile}">The_Proof</a>
-        <a href="/consulting.html"   class="${advisoryMobile}">Advisory</a>
-        <a href="/labs.html"         class="${labsMobile}">Research_Labs</a>
-        <a href="/articles.html"     class="${articlesMobile}">Articles</a>
+        <a href="/case-studies" class="${proofMobile}">The_Proof</a>
+        <a href="/consulting"   class="${advisoryMobile}">Advisory</a>
+        <a href="/labs"         class="${labsMobile}">Research_Labs</a>
+        <a href="/articles"     class="${articlesMobile}">Articles</a>
         <a href="/resume.pdf"        class="text-slate-900 dark:text-white uppercase">RESUME_PDF</a>
       </nav>
     </div>

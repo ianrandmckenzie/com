@@ -18,7 +18,8 @@ const getThemeLabel = pref => THEME_LABELS[pref] ?? (pref === 'dark' ? 'Dark' : 
 
 export function mountNav() {
   const tooltip    = mountTooltip();
-  const filename   = window.location.pathname.split('/').pop() || 'index.html';
+  const rawPath    = window.location.pathname.split('/').pop() || '';
+  const filename   = rawPath.replace(/\.html$/, '') || 'index';
   let currentPref = getEffectiveTheme();
 
   // --- Obtain or create the header element ---
@@ -27,11 +28,11 @@ export function mountNav() {
 
   if (!alreadyBaked) {
     // Dev / non-baked environment: build the full HTML
-    const isProofActive    = filename === 'case-studies.html' || filename === 'case-study.html' || filename === 'jane-sites.html' || filename === 'failureunit.html' || filename === 'seo-case-study.html';
-    const isAdvisoryActive = filename === 'consulting.html';
-    const isLabsActive     = filename === 'labs.html' || filename === 'spiral.html' || filename === 'voxel.html';
-    const isArticlesActive = /^\/articles(\/|\.html|$)/.test(window.location.pathname);
-    const isHomePage       = filename === 'index.html' || filename === '' || window.location.pathname === '/' || /^\/index(\.html)?$/.test(window.location.pathname);
+    const isProofActive    = filename === 'case-studies' || filename === 'case-study' || filename === 'jane-sites' || filename === 'failureunit' || filename === 'seo-case-study';
+    const isAdvisoryActive = filename === 'consulting';
+    const isLabsActive     = filename === 'labs' || filename === 'spiral' || filename === 'voxel';
+    const isArticlesActive = /^\/articles(\/|$)/.test(window.location.pathname);
+    const isHomePage       = filename === 'index' || window.location.pathname === '/';
 
     const mckenzieClass = isHomePage
       ? 'bg-gradient-to-r from-blue-500 to-green-500 bg-clip-text text-transparent'
@@ -69,17 +70,17 @@ export function mountNav() {
 
     header.innerHTML = `
     <div class="max-w-5xl mx-auto px-6 py-4 flex justify-between items-center">
-      <a href="/index.html"
+      <a href="/"
          class="font-sans font-black text-lg tracking-tighter uppercase text-slate-900 dark:text-white hover:opacity-75 transition-opacity">
         Ian R. <span class="${mckenzieClass}">McKenzie</span>
       </a>
 
       <div class="flex items-center gap-3">
         <nav aria-label="Primary" class="hidden md:flex items-center gap-8 text-xs font-bold tracking-widest">
-          <a href="/case-studies.html" class="${proofDesktop}" ${isProofActive    ? '' : 'data-title="Case Studies & Outcomes"'}>The_Proof</a>
-          <a href="/consulting.html"   class="${advisoryDesktop}" ${isAdvisoryActive ? '' : 'data-title="Advisory & Strategy"'}>Advisory</a>
-          <a href="/labs.html"         class="${labsDesktop}" ${isLabsActive     ? '' : 'data-title="Experiments & Builds"'}>Research_Labs</a>
-          <!--<a href="/articles.html"     class="${articlesDesktop}" ${isArticlesActive ? '' : 'data-title="Whitepapers & Analyses"'}>Articles</a>-->
+          <a href="/case-studies" class="${proofDesktop}" ${isProofActive    ? '' : 'data-title="Case Studies & Outcomes"'}>The_Proof</a>
+          <a href="/consulting"   class="${advisoryDesktop}" ${isAdvisoryActive ? '' : 'data-title="Advisory & Strategy"'}>Advisory</a>
+          <a href="/labs"         class="${labsDesktop}" ${isLabsActive     ? '' : 'data-title="Experiments & Builds"'}>Research_Labs</a>
+          <!--<a href="/articles"     class="${articlesDesktop}" ${isArticlesActive ? '' : 'data-title="Whitepapers & Analyses"'}>Articles</a>-->
           <a href="/resume.pdf"
              class="text-slate-900 dark:text-white border-b border-blue-500 pb-0.5 hover:border-slate-900 dark:hover:border-white transition-all uppercase" data-title="Download my résumé">RESUME_PDF</a>
         </nav>
@@ -110,10 +111,10 @@ export function mountNav() {
     <div id="nav-mobile-menu"
          class="hidden md:hidden border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95">
       <nav aria-label="Mobile" class="max-w-5xl mx-auto px-6 py-5 flex flex-col gap-5 text-xs font-bold tracking-widest">
-        <a href="/case-studies.html" class="${proofMobile}">The_Proof</a>
-        <a href="/consulting.html"   class="${advisoryMobile}">Advisory</a>
-        <a href="/labs.html"         class="${labsMobile}">Research_Labs</a>
-        <a href="/articles.html"     class="${articlesMobile}">Articles</a>
+        <a href="/case-studies" class="${proofMobile}">The_Proof</a>
+        <a href="/consulting"   class="${advisoryMobile}">Advisory</a>
+        <a href="/labs"         class="${labsMobile}">Research_Labs</a>
+        <a href="/articles"     class="${articlesMobile}">Articles</a>
         <a href="/resume.pdf"        class="text-slate-900 dark:text-white uppercase">RESUME_PDF</a>
       </nav>
     </div>
