@@ -24,10 +24,10 @@
 
             <header class="mb-20 border-b border-slate-200 dark:border-slate-800 pb-12">
                 <div class="px-3 py-1 inline-block mb-6 text-[10px] font-mono font-bold tracking-[0.3em] text-purple-900 dark:text-purple-200 border border-purple-200 dark:border-purple-700 rounded uppercase bg-purple-50 dark:bg-purple-950/40">
-                    REF: LAB-002-VOXEL &mdash; Validated_Benchmark
+                        REF: LAB-002-VOXEL &mdash; Verified_Benchmark
                 </div>
                 <h1 class="text-4xl md:text-6xl font-black mb-8 leading-tight uppercase tracking-tighter">
-                    Deterministic <span class="text-purple-600 dark:text-purple-400">Volumetric</span> Orchestration
+                        Deterministic <span class="text-purple-600 dark:text-purple-400">Volumetric</span> Benchmark
                 </h1>
                 <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-[11px] font-mono text-slate-600 dark:text-slate-50 uppercase tracking-widest">
                     <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-300 font-semibold">Role</span> Sole Architect</div>
@@ -38,6 +38,33 @@
                     <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-300 font-semibold">Relevance</span> 84 / 100</div>
                 </div>
             </header>
+
+            <section class="grid md:grid-cols-2 xl:grid-cols-4 gap-4 mb-24">
+                <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-lg">
+                    <div class="text-[10px] font-black uppercase tracking-[0.3em] text-purple-700 dark:text-purple-300 mb-3">Determinism</div>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                        The generator is seed-driven and pure: the same seed and chunk coordinates reproduce the same chunk every time, with no shared mutable RNG state.
+                    </p>
+                </div>
+                <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-lg">
+                    <div class="text-[10px] font-black uppercase tracking-[0.3em] text-purple-700 dark:text-purple-300 mb-3">Round-Trip Persistence</div>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                        Save and load use fixed little-endian binary snapshots, so the voxel payload comes back byte-for-byte instead of being reinterpreted or compressed.
+                    </p>
+                </div>
+                <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-lg">
+                    <div class="text-[10px] font-black uppercase tracking-[0.3em] text-purple-700 dark:text-purple-300 mb-3">Memory Footprint</div>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                        Each 16³ chunk contains 4,096 voxels, or 16 KB of raw voxel data, which keeps memory cost easy to reason about and easy to budget.
+                    </p>
+                </div>
+                <div class="bg-slate-100 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 p-5 rounded-lg">
+                    <div class="text-[10px] font-black uppercase tracking-[0.3em] text-purple-700 dark:text-purple-300 mb-3">Mesh Throughput</div>
+                    <p class="text-sm text-slate-700 dark:text-slate-300 leading-relaxed">
+                        Greedy meshing, worker offload, and zero-copy transfers define the throughput path; the public target is a sub-16 ms render loop under normal edit load.
+                    </p>
+                </div>
+            </section>
 
             <div class="space-y-24">
 

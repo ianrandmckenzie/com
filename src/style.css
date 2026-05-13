@@ -17,5 +17,5 @@ body {
 .dark .fa-dt-secondary { fill: #cbd5e1; opacity: 0.4; }  /* slate-300 in dark mode  */
 
 html, body {
-overscroll-behavior: none;
+  overscroll-behavior: none;
 }
