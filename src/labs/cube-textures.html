@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lab prototype: an interactive cube texture and JSON pixel-art editor.">
+    <meta name="keywords" content="cube textures, pixel art, voxel, JSON, interactive prototype">
+    <title>LAB-003-TEXTURE | Ian R. McKenzie</title>
+    <meta name="bc-label" content="Cube Texture Studio">
+    <style>
+        .crp-grid { background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 40px 40px; }
+        .dark .crp-grid { background-image: linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px); background-size: 40px 40px; }
+        .prototype-shell:fullscreen { background: #020617; padding: 1rem; }
+        .prototype-shell:fullscreen iframe { height: calc(100vh - 2rem); }
+        .prototype-shell:fullscreen .prototype-exit { display: inline-flex; }
+    </style>
+    <script>
+      (function(){var p=localStorage.getItem('theme-preference');var d=document.documentElement;if(p==='light'){d.classList.remove('dark');}else if(p==='dark'){d.classList.add('dark');}else{if(!window.matchMedia('(prefers-color-scheme: light)').matches){d.classList.add('dark');}}})();
+    </script>
+    <link href="/style.css" rel="stylesheet" />
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-sans leading-relaxed crp-grid">
+    <main id="main-content">
+        <article class="max-w-5xl mx-auto px-6 pt-4 md:pt-10 pb-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-x border-slate-200 dark:border-slate-800 shadow-2xl">
+            <header class="mb-20 border-b border-slate-200 dark:border-slate-800 pb-12">
+                <div class="px-3 py-1 inline-block mb-6 text-[10px] font-mono font-bold tracking-[0.3em] text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded uppercase bg-slate-100 dark:bg-slate-950/40">REF: LAB-003-TEXTURE — Prototype</div>
+                <h1 class="text-4xl md:text-6xl font-black mb-8 leading-tight uppercase tracking-tighter">Cube <span class="text-purple-600 dark:text-purple-400">Texture</span> Studio</h1>
+                <div class="grid grid-cols-2 md:grid-cols-6 gap-4 text-[11px] font-mono text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">Role</span> Sole Architect</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">Environment</span> HTML / WebGL</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">Focus</span> Texture Systems</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">Status</span> Prototype</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">Text</span> Human-written</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">First Published</span> <time datetime="2026-11-19">Nov. 19, 2026</time></div>
+                </div>
+            </header>
+
+            <div class="space-y-24">
+                <section class="grid md:grid-cols-3 gap-12">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">The_Big_Question</div>
+                    <div class="md:col-span-2 space-y-6">
+                        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-light">How does one person with big, lofty ideas reasonably translate that to practical execution with a reasonable timeline?</p>
+                        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">Say what you want about AI (there is regrettably, a lot), the one thing most developers can agree on is that we can now shift our focus less on writing lines of logic and more on being code reviewers for lines created by AI. For a project like making a video game, this means that someone like me can focus more on story, art, and most importantly, game design mechanics that are genuinely fun and exhilirating.</p>
+                        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">Yet, with 3 distinct sky nations all with their own visual themes, compromises must be made even with things like art. For this reason, I have chosen to divide my artwork in a few ways:</p>
+                        <ol class="list-none space-y-4 font-mono text-[11px] text-slate-600 dark:text-slate-300">
+                          <li class="flex items-start gap-3 border-b border-slate-200 dark:border-slate-800 pb-3"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-purple-300 dark:border-purple-700 text-[10px] font-bold text-purple-700 dark:text-purple-300">01</span><span>Character attachments (such as tools and weapons): Modelled, textured, and rigged by me</span></li>
+                          <li class="flex items-start gap-3 border-b border-slate-200 dark:border-slate-800 pb-3"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-purple-300 dark:border-purple-700 text-[10px] font-bold text-purple-700 dark:text-purple-300">02</span><span>Complex environment objects (like grass swaying in the wind): Modelled, textured, and rigged by me</span></li>
+                          <li class="flex items-start gap-3 border-b border-slate-200 dark:border-slate-800 pb-3"><span class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-purple-300 dark:border-purple-700 text-[10px] font-bold text-purple-700 dark:text-purple-300">03</span><span>Entities (such as livestock and creatures) and character models: Modelled, textured, and rigged by me</span></li>
+                        </ol>
+                    </div>
+                </section>
+                <section class="grid md:grid-cols-3 gap-12">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">The_Big_Problem</div>
+                    <div class="md:col-span-2 space-y-6">
+                      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">I accumulated a lot of experience with this using Blockbench when I did contract work making rigged 3d models and textures for people making custom mods and servers for Hytale. Yet, this leaves a big, glaring hole. The voxels - cubes - for the environment. In these early stages, there are already over 200 textures needed in the production pipeline. This requirement will easily balloon to over 2000 as I progress in development.</p>
+                      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">A to-do list of that size is simply not feasible, particularly for someone like me spending a big chunk of each day managing my schizophrenia disability. So, the immediate answer is: let's use AI. Yet, if you know anything about making an atlas for meshing onto a 3d model, you know that such a task can be confusing for even for humans. To try and make a bizarre looking image and have that translate to something passable looking after mapping onto a 3d object is inevitably going to be a frustrating endeavour to get AI to do. This is compounded to an impossible degree at scale (that 2000+ number I mentioned earlier).</p>
+                      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">This bottleneck is one of the reasons I paused my work for a while when I first started boilerplating the voxel engine at the beginning of this year. But, at some point, something clicked in my head. Sure, AI sucks at making an atlas-conforming texture. But, they are EXCELLENT at outputting text. They are excellent at code. Why not just have it output a JSON instead of an actual image?</p>
+                    </div>
+                </section>
+
+                <section class="grid md:grid-cols-3 gap-12">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">The_JSON_Answer</div>
+                    <div class="md:col-span-2 space-y-6">
+                      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">Instead of prompting AI to generate an image, I can instead prompt AI to simply generate a JSON object based on a handful of preset definitions. We then paste that into a preview tool, iterate if/as needed, then export the png texture atlas from the previewer itself. Instead of spending 30 to 90 minutes on each texture, I can now spend 2 to 10 minutes instead. Multiple that by 2,000 and we now have a workflow that is realistic for a solo developer.</p>
+                    </div>
+                </section>
+
+                <section class="border-t border-slate-200 dark:border-slate-800 pt-16" aria-labelledby="prototype-heading">
+                    <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+                        <div>
+                            <p class="text-[10px] font-mono font-bold tracking-[0.3em] text-slate-500 dark:text-slate-400 uppercase">Interactive_Prototype</p>
+                            <h2 id="prototype-heading" class="text-2xl font-black uppercase tracking-tight">Cube Texture Workbench</h2>
+                        </div>
+                        <button id="prototype-maximize" type="button" class="inline-flex items-center gap-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Maximize cube texture prototype">
+                            <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4 fill-none stroke-current" stroke-width="1.5"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>
+                            <span>Maximize</span>
+                        </button>
+                    </div>
+                    <div id="prototype-shell" class="prototype-shell relative overflow-hidden border border-slate-300 dark:border-slate-700 bg-slate-950 p-2 md:p-4">
+                        <button id="prototype-exit" type="button" class="prototype-exit hidden absolute right-5 top-5 z-10 items-center justify-center rounded-full border border-white/30 bg-slate-950/90 p-2 text-white hover:bg-slate-800" aria-label="Exit full screen">
+                            <svg aria-hidden="true" viewBox="0 0 16 16" class="h-5 w-5 fill-none stroke-current" stroke-width="1.5"><path d="M3 3l10 10M13 3L3 13"/></svg>
+                        </button>
+                        <iframe src="/voxel_json/index.html" title="Cube texture editor prototype" class="block h-[70vh] min-h-120 w-full border-0 bg-white" loading="lazy"></iframe>
+                    </div>
+                </section>
+
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">The_Slop_Caveat</div>
+                    <p class="md:col-span-2 text-slate-600 dark:text-slate-300 leading-relaxed">The logical question anyone who may consider themselves an artist might be, "aren't I just making more AI slop?" Maybe I am. But, with my limitations, I think pragmatism is a better answer. I like to think that one day I will go back and redo all the textures by hand. Whether or not that happens depends entirely on whether or not I sell this game and if it makes enough money to be a feasible thing to do. Until then, I am content with a balanced approach that prioritizes story and fun, with only complex and animated objects being hand-crafted by me (which will still be an enormous amount).</p>
+                </section>
+            </div>
+        </article>
+    </main>
+    <script>
+      const shell = document.querySelector('#prototype-shell');
+      const maximize = document.querySelector('#prototype-maximize');
+      const exit = document.querySelector('#prototype-exit');
+      const enterFullscreen = () => shell.requestFullscreen?.() || shell.webkitRequestFullscreen?.();
+      maximize.addEventListener('click', enterFullscreen);
+      exit.addEventListener('click', () => document.exitFullscreen?.() || document.webkitExitFullscreen?.());
+      document.addEventListener('fullscreenchange', () => {
+        const active = document.fullscreenElement === shell;
+        maximize.setAttribute('aria-label', active ? 'Prototype is maximized' : 'Maximize cube texture prototype');
+        exit.classList.toggle('hidden', !active);
+        exit.classList.toggle('inline-flex', active);
+      });
+    </script>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

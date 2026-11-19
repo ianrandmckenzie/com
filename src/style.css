@@ -1,12 +1,5 @@
 @import "tailwindcss";
 
-/* Sticky footer: body fills the full viewport height as a flex column */
-body {
-  min-height: 100dvh;
-  display: flex;
-  flex-direction: column;
-}
-
 /* Tell TailwindCSS v4 to use the .dark class on <html> for dark: variants */
 @variant dark (&:where(.dark, .dark *));
 

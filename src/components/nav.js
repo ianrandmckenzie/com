@@ -39,7 +39,7 @@ export function mountNav() {
     // Dev / non-baked environment: build the full HTML
     const isProofActive    = filename === 'case-studies' || filename === 'case-study' || filename === 'jane-sites' || filename === 'failureunit' || filename === 'seo-case-study';
     const isAdvisoryActive = filename === 'consulting';
-    const isLabsActive     = filename === 'labs' || filename === 'spiral' || filename === 'voxel';
+    const isLabsActive     = filename === 'labs' || filename === 'spiral' || filename === 'voxel' || filename === 'cube-textures';
     const isArticlesActive = /^\/articles(\/|$)/.test(window.location.pathname);
     const isHomePage       = filename === 'index' || window.location.pathname === '/';
 
@@ -86,12 +86,10 @@ export function mountNav() {
 
       <div class="flex items-center gap-3">
         <nav aria-label="Primary" class="hidden md:flex items-center gap-8 text-xs font-bold tracking-widest">
-          <a href="/case-studies" class="${proofDesktop}" ${isProofActive    ? 'aria-current="page"' : 'data-title="Case Studies & Outcomes"'}>The_Proof</a>
-          <a href="/consulting"   class="${advisoryDesktop}" ${isAdvisoryActive ? 'aria-current="page"' : 'data-title="Advisory & Strategy"'}>Advisory</a>
-          <a href="/labs"         class="${labsDesktop}" ${isLabsActive     ? 'aria-current="page"' : 'data-title="Experiments & Builds"'}>Research_Labs</a>
+          <a href="/case-studies" class="${proofDesktop}" ${isProofActive    ? 'aria-current="page"' : 'data-title="Case Studies & Outcomes"'}>Case_Studies</a>
+          <a href="/consulting"   class="${advisoryDesktop}" ${isAdvisoryActive ? 'aria-current="page"' : 'data-title="Websites, SEO & Strategy"'}>Client_Work</a>
+          <a href="/labs"         class="${labsDesktop}" ${isLabsActive     ? 'aria-current="page"' : 'data-title="Game Systems & Experiments"'}>Game_Lab</a>
           <!--<a href="/articles"     class="${articlesDesktop}" ${isArticlesActive ? 'aria-current="page"' : 'data-title="Whitepapers & Analyses"'}>Articles</a>-->
-          <a href="/resume.pdf"
-             class="text-slate-900 dark:text-white border-b border-blue-500 pb-0.5 hover:border-slate-900 dark:hover:border-white transition-all uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2" data-title="Download my résumé">RESUME_PDF</a>
         </nav>
 
         <button id="theme-toggle"
@@ -120,11 +118,10 @@ export function mountNav() {
     <div id="nav-mobile-menu"
          class="hidden md:hidden border-t border-slate-200 dark:border-slate-700 bg-white/95 dark:bg-slate-900/95">
       <nav aria-label="Mobile" class="max-w-5xl mx-auto px-6 py-5 flex flex-col gap-5 text-xs font-bold tracking-widest">
-        <a href="/case-studies" class="${proofMobile}" ${isProofActive    ? 'aria-current="page"' : ''}>The_Proof</a>
-        <a href="/consulting"   class="${advisoryMobile}" ${isAdvisoryActive ? 'aria-current="page"' : ''}>Advisory</a>
-        <a href="/labs"         class="${labsMobile}" ${isLabsActive     ? 'aria-current="page"' : ''}>Research_Labs</a>
+        <a href="/case-studies" class="${proofMobile}" ${isProofActive    ? 'aria-current="page"' : ''}>Case_Studies</a>
+        <a href="/consulting"   class="${advisoryMobile}" ${isAdvisoryActive ? 'aria-current="page"' : ''}>Client_Work</a>
+        <a href="/labs"         class="${labsMobile}" ${isLabsActive     ? 'aria-current="page"' : ''}>Game_Lab</a>
         <!--<a href="/articles"     class="${articlesMobile}" ${isArticlesActive ? 'aria-current="page"' : ''}>Articles</a>-->
-        <a href="/resume.pdf"   class="text-slate-900 dark:text-white uppercase focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-500 focus-visible:outline-offset-2">RESUME_PDF</a>
       </nav>
     </div>
   `;

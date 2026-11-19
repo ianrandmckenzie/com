@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>3D Voxel Texture Atlas Tester &amp; JSON Pixel-Art Editor</title>
+  <!-- Tailwind CSS for responsive dark-mode workbench layout -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Three.js r128 for crisp WebGL voxel rendering -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <!-- Inter & JetBrains Mono fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        },
+      },
+    };
+  </script>
+
+  <style>
+    /* Crisp nearest-neighbor rendering on all 2D pixel-art canvases */
+    canvas.pixelated {
+      image-rendering: -moz-crisp-edges;
+      image-rendering: -webkit-crisp-edges;
+      image-rendering: pixelated;
+      image-rendering: crisp-edges;
+    }
+
+    /* Subtle dark checkerboard pattern to inspect transparent pixels if used */
+    .bg-checkerboard {
+      background-color: #0b1120;
+      background-image:
+        linear-gradient(45deg, #162033 25%, transparent 25%),
+        linear-gradient(-45deg, #162033 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, #162033 75%),
+        linear-gradient(-45deg, transparent 75%, #162033 75%);
+      background-size: 12px 12px;
+      background-position: 0 0, 0 6px, 6px -6px, -6px 0;
+    }
+
+    /* Custom subtle scrollbars */
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #090d16;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 9999px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+
+    /* Prevent touch scrolling on the interactive 3D viewport */
+    #viewport-container {
+      touch-action: none;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased selection:bg-emerald-500/30 selection:text-emerald-200 overflow-x-hidden">
+
+  <!-- Toast Notification Container (replaces alert/confirm) -->
+  <div id="toast-container" class="fixed bottom-4 right-4 z-50 flex flex-col gap-2 pointer-events-none max-w-sm"></div>
+
+  <!-- Main Split-Screen Workbench: Left Panel (~440px) + Right Panel (flex-grow) -->
+  <div class="flex flex-col lg:flex-row min-h-screen lg:h-screen lg:overflow-hidden">
+
+    <!-- ===================================================================== -->
+    <!-- LEFT PANEL (~440px): JSON Texture Editor & Atlas Exporter             -->
+    <!-- ===================================================================== -->
+    <aside class="w-full lg:w-[440px] shrink-0 bg-slate-900 border-b lg:border-b-0 lg:border-r border-slate-800 flex flex-col lg:h-full">
+
+      <!-- Workbench Header & Block Preset Selector -->
+      <header class="px-4 py-3.5 border-b border-slate-800 bg-slate-900/95 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="h-8 w-8 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center shrink-0">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+            </svg>
+          </div>
+          <div class="truncate">
+            <h1 class="text-sm font-semibold text-white tracking-tight truncate">Voxel JSON Editor</h1>
+            <p class="text-[11px] font-mono text-slate-400 truncate">Pixel Matrix &rarr; Engine Atlas</p>
+          </div>
+        </div>
+
+        <!-- Food Block Preset Selector -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <label for="preset-select" class="sr-only">Block Preset</label>
+          <select id="preset-select" class="rounded-xl bg-slate-950 border border-slate-700 hover:border-slate-600 text-xs font-medium text-slate-200 px-2.5 py-2 focus:outline-none focus:border-emerald-500 transition-colors cursor-pointer">
+            <option value="frosted_brownie">Frosted Brownie</option>
+            <option value="herb_cornbread">Herb-Crusted Cornbread</option>
+            <option value="matcha_grounds">Matcha Coffee Grounds</option>
+          </select>
+        </div>
+      </header>
+
+      <!-- Scrollable Left Panel Content -->
+      <div class="flex-1 overflow-y-auto p-4 space-y-4">
+
+        <!-- SECTION 1: JSON Matrix Editor & Validation -->
+        <section class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">1. Block JSON Definition</span>
+            <span class="text-[11px] font-mono text-slate-500">Live Debounced Compile</span>
+          </div>
+
+          <textarea
+            id="json-editor"
+            spellcheck="false"
+            aria-label="Voxel JSON Texture Definition"
+            class="w-full h-[250px] rounded-xl bg-slate-950 border border-slate-700/90 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500/40 focus:outline-none p-3 font-mono text-[11px] leading-[1.35] text-emerald-300 resize-y whitespace-pre overflow-x-auto transition-colors"
+          ></textarea>
+
+          <!-- Editor Action Buttons: Render, Format, Copy -->
+          <div class="grid grid-cols-3 gap-2">
+            <button id="btn-render-json" type="button" class="py-2 px-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-semibold text-xs transition-colors flex items-center justify-center gap-1.5 shadow-sm">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+              Render JSON
+            </button>
+            <button id="btn-format-json" type="button" class="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs transition-colors flex items-center justify-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h10M4 18h14" />
+              </svg>
+              Format JSON
+            </button>
+            <button id="btn-copy-json" type="button" class="py-2 px-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-medium text-xs transition-colors flex items-center justify-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
+              </svg>
+              Copy JSON
+            </button>
+          </div>
+
+          <!-- Compilation Status Banner -->
+          <div id="compile-status" class="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 flex items-start gap-2 text-xs font-mono text-emerald-300">
+            <span id="compile-status-dot" class="mt-1 h-2 w-2 rounded-full bg-emerald-400 shrink-0"></span>
+            <span id="compile-status-text" class="break-words leading-snug">Compiled 16×16 × 6 faces</span>
+          </div>
+        </section>
+
+        <hr class="border-slate-800" />
+
+        <!-- SECTION 2: Sliced Faces Inspector (6 Upscaled 56x56px Squares) -->
+        <section class="space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">2. Sliced Faces Inspector</span>
+            <span class="text-[11px] font-mono text-slate-500">56×56px (Nearest)</span>
+          </div>
+
+          <div id="faces-inspector-grid" class="grid grid-cols-3 gap-2 rounded-xl bg-slate-950/90 border border-slate-800 p-2.5">
+            <!-- Populated dynamically with 6 upscaled 56x56px face canvases -->
+          </div>
+        </section>
+
+        <hr class="border-slate-800" />
+
+        <!-- SECTION 3: Bare-Bones Engine Atlas & PNG Exporter -->
+        <section class="space-y-2.5 pb-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-semibold uppercase tracking-wider text-slate-400">3. Bare-Bones Engine Atlas</span>
+            <span id="atlas-dimensions-badge" class="text-[11px] font-mono text-indigo-300 bg-indigo-500/15 border border-indigo-500/30 px-2 py-0.5 rounded-md">
+              48×32 px
+            </span>
+          </div>
+
+          <!-- Layout Toggle: 3x2 Horizontal (48x32) vs 2x3 Vertical (32x48) -->
+          <div class="grid grid-cols-2 gap-1.5 p-1 rounded-xl bg-slate-950 border border-slate-800">
+            <button id="btn-layout-3x2" type="button" class="py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-colors bg-indigo-500 text-white shadow-sm">
+              3×2 Horizontal (48×32)
+            </button>
+            <button id="btn-layout-2x3" type="button" class="py-1.5 px-2 rounded-lg text-[11px] font-medium transition-colors text-slate-400 hover:text-slate-200">
+              2×3 Vertical (32×48)
+            </button>
+          </div>
+
+          <!-- Live Pixelated Atlas Preview Box -->
+          <div class="rounded-xl bg-slate-950 border border-slate-800 p-3 flex flex-col items-center gap-2">
+            <div class="bg-checkerboard rounded-lg border border-slate-700/80 p-1.5 flex items-center justify-center">
+              <canvas id="atlas-preview-canvas" width="48" height="32" class="pixelated block" style="width: 192px; height: 128px;"></canvas>
+            </div>
+            <p id="atlas-layout-desc" class="text-[10px] font-mono text-slate-400 text-center leading-relaxed">
+              Row 1: Top, Bottom, North &bull; Row 2: South, East, West
+            </p>
+          </div>
+
+          <!-- Download Bare-Bones PNG Button -->
+          <button id="btn-download-png" type="button" class="w-full py-2.5 px-3 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-semibold text-xs transition-colors flex items-center justify-center gap-2 shadow-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Download Engine PNG
+          </button>
+        </section>
+
+      </div>
+    </aside>
+
+    <!-- ===================================================================== -->
+    <!-- RIGHT PANEL (flex-grow): Interactive 3D WebGL Voxel Viewport + Toolbar -->
+    <!-- ===================================================================== -->
+    <main id="viewport-container" class="relative flex-1 min-h-[420px] lg:h-full bg-slate-950 overflow-hidden select-none flex flex-col">
+
+      <!-- Top Viewport Toolbar -->
+      <div class="z-10 flex flex-wrap items-center justify-between gap-2 px-3 sm:px-4 py-2.5 bg-slate-900/85 border-b border-slate-800/90 backdrop-blur-md">
+        <!-- Active Block Badge -->
+        <div class="flex items-center gap-2.5">
+          <span class="h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></span>
+          <span id="hud-block-name" class="text-xs sm:text-sm font-semibold text-white">Frosted Brownie</span>
+          <span id="hud-block-dims" class="text-[11px] font-mono text-slate-400 bg-slate-950 border border-slate-800 px-2 py-0.5 rounded-md">16×16</span>
+        </div>
+
+        <!-- Viewport Inspection Toggles -->
+        <div class="flex flex-wrap items-center gap-1.5">
+          <button id="btn-toggle-outlines" type="button" class="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-xs font-medium text-slate-300 flex items-center gap-1.5 transition-colors">
+            <span id="indicator-outlines" class="h-2 w-2 rounded-full bg-slate-600"></span>
+            Block Outlines
+          </button>
+
+          <button id="btn-toggle-autospin" type="button" class="px-2.5 py-1.5 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-xs font-medium text-slate-300 flex items-center gap-1.5 transition-colors">
+            <span id="indicator-autospin" class="h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]"></span>
+            Auto-Spin
+          </button>
+
+          <button id="btn-reset-camera" type="button" class="px-2.5 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-medium text-slate-200 transition-colors">
+            Reset Camera
+          </button>
+        </div>
+      </div>
+
+      <!-- Three.js WebGL Mount Area -->
+      <div id="three-canvas-mount" class="relative flex-1 w-full h-full cursor-grab active:cursor-grabbing"></div>
+
+      <!-- Top-Right Navigation Hint Overlay -->
+      <div class="hidden sm:flex items-center gap-2 absolute top-14 right-3 pointer-events-none rounded-xl bg-slate-900/80 border border-slate-800/80 backdrop-blur-md px-3 py-1.5 text-[11px] font-mono text-slate-400">
+        <span><strong class="text-emerald-400 font-medium">L-Drag</strong> Orbit</span>
+        <span class="text-slate-700">&bull;</span>
+        <span><strong class="text-sky-400 font-medium">R-Drag</strong> Pan</span>
+        <span class="text-slate-700">&bull;</span>
+        <span><strong class="text-indigo-400 font-medium">Scroll</strong> Zoom</span>
+      </div>
+
+      <!-- Bottom Floating 90° Rotation & Tiling Bar -->
+      <div class="z-10 px-3 py-2.5 bg-slate-900/90 border-t border-slate-800/90 backdrop-blur-md flex flex-wrap items-center justify-between gap-2">
+        <!-- View Mode: Single Voxel (1x1) vs 3x3 Tiling Grid -->
+        <div class="flex items-center gap-1 p-1 rounded-xl bg-slate-950 border border-slate-800">
+          <button id="btn-mode-single" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors bg-emerald-500 text-slate-950">
+            Single Voxel (1×1)
+          </button>
+          <button id="btn-mode-grid" type="button" class="px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-slate-400 hover:text-white">
+            3×3 Tiling Grid
+          </button>
+        </div>
+
+        <!-- Y-Rotation Controls & Randomize 90° Fluidity Tester -->
+        <div class="flex flex-wrap items-center gap-1.5">
+          <span id="rotation-status" class="hidden md:inline-block text-[11px] font-mono text-slate-400 mr-1">Y-Rot: 0°</span>
+          <div class="flex items-center gap-1">
+            <button data-rot="0" type="button" class="rot-step-btn px-2.5 py-1.5 rounded-lg font-mono text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 transition-colors">0°</button>
+            <button data-rot="1" type="button" class="rot-step-btn px-2.5 py-1.5 rounded-lg font-mono text-xs font-medium bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors">90°</button>
+            <button data-rot="2" type="button" class="rot-step-btn px-2.5 py-1.5 rounded-lg font-mono text-xs font-medium bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors">180°</button>
+            <button data-rot="3" type="button" class="rot-step-btn px-2.5 py-1.5 rounded-lg font-mono text-xs font-medium bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors">270°</button>
+          </div>
+          <button id="btn-randomize-rot" type="button" class="px-3 py-1.5 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 border border-amber-500/35 text-xs font-semibold transition-colors">
+            Randomize 90° Rotations
+          </button>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    /**
+     * ==========================================================================
+     * 3D VOXEL TEXTURE ATLAS TESTER & JSON PIXEL-ART EDITOR
+     * - Initializes strictly inside DOMContentLoaded
+     * - Binds all DOM events via null-safe `on()` helper
+     * - Compiles 16x16 JSON pixel matrices into NearestFilter CanvasTextures
+     * - Exports clean, bare-bones 48x32 (3x2) or 32x48 (2x3) PNG sprite atlases
+     * ==========================================================================
+     */
+
+    const FACE_ORDER = ['top', 'bottom', 'north', 'south', 'east', 'west'];
+
+    const FACE_LABELS = {
+      top: 'Top',
+      bottom: 'Bottom',
+      north: 'North',
+      south: 'South',
+      east: 'East',
+      west: 'West',
+    };
+
+    // Atlas layout configurations:
+    // 3x2 Horizontal (48x32): Row 0 = Top, Bottom, North | Row 1 = South, East, West
+    // 2x3 Vertical   (32x48): Col 0 = Top, Bottom, East  | Col 1 = North, South, West
+    const ATLAS_LAYOUTS = {
+      '3x2': {
+        cols: 3,
+        rows: 2,
+        desc: 'Row 1: Top, Bottom, North • Row 2: South, East, West',
+        positions: {
+          top:    { col: 0, row: 0 },
+          bottom: { col: 1, row: 0 },
+          north:  { col: 2, row: 0 },
+          south:  { col: 0, row: 1 },
+          east:   { col: 1, row: 1 },
+          west:   { col: 2, row: 1 },
+        },
+      },
+      '2x3': {
+        cols: 2,
+        rows: 3,
+        desc: 'Col 1: Top, Bottom, East • Col 2: North, South, West',
+        positions: {
+          top:    { col: 0, row: 0 },
+          north:  { col: 1, row: 0 },
+          bottom: { col: 0, row: 1 },
+          south:  { col: 1, row: 1 },
+          east:   { col: 0, row: 2 },
+          west:   { col: 1, row: 2 },
+        },
+      },
+    };
+
+    // --------------------------------------------------------------------------
+    // BUILT-IN 16x16 SEAMLESS FOOD BLOCK PRESETS
+    // All 4 side faces share identical col-0 & col-15 drip profiles so corners
+    // and 90-degree rotated neighbors wrap seamlessly without seams.
+    // --------------------------------------------------------------------------
+    const PRESETS = {
+      frosted_brownie: {
+        block: 'Frosted Brownie',
+        size: 16,
+        palette: {
+          M: '#8ff0c8', // Mint frosting base
+          L: '#c4ffea', // Mint highlight / swirl crest
+          S: '#56c99b', // Mint shadow / swirl groove
+          P: '#ff7eb6', // Strawberry sprinkle
+          Y: '#ffd166', // Lemon sprinkle
+          C: '#70d6ff', // Blueberry sprinkle
+          B: '#422114', // Rich brownie crumb
+          D: '#29130b', // Dark fudge chunk / drip shadow
+          K: '#613422', // Warm cocoa crumb highlight
+        },
+        faces: {
+          // 4-fold rotationally harmonious mint swirl with balanced sprinkles
+          top: [
+            'MMLMMSSMMSSMMMLM',
+            'MLMMMPMMMMMMYMMM',
+            'LMMSSLLLLLLSSMMY',
+            'MMLLSMMMMMMSLLMM',
+            'MMLSMLSSSSLMCLMM',
+            'SLSMLLMMMMLLMSLS',
+            'SLMMLMSSSSMLMMLS',
+            'MMLMLSMMMMSLMLMM',
+            'MMLMLSMMMMSLMLMM',
+            'SLMMLMSSSSMLMMLS',
+            'SLSMLLMMMMLLMSLS',
+            'MMLCMLSSSSLMYLMM',
+            'MMLLSMMMMMMSLLMM',
+            'PMMSSLLLLLLSSMMM',
+            'MMMYMMMMMMPMMMLM',
+            'MLMMMSSMMSSMMMLM',
+          ],
+          // Seamless fudge brownie crumb with cocoa highlights & dark chunks
+          bottom: [
+            'BBBBKBBBBBBKBBBB',
+            'BKBBBDDBKBBBBKBB',
+            'BBBKBDDMBBBKBBBB',
+            'KBBBBBBBBBBDDBKB',
+            'BBBKBBBKBBBDDMBB',
+            'BBDDBBBBBKBBBBBB',
+            'BBDDBKBBBBBBKBBB',
+            'BBBBBBBBKBBBBDBB',
+            'BBKBBBBBBBBBDDBB',
+            'BBBBKBBBBKBBBBBB',
+            'BBBBBBBDDBBBBKBB',
+            'KBBBBBBDDMBBBBBB',
+            'BBBKBBBBBBBBKBBB',
+            'BBBBBDDBKBBBBBBB',
+            'BKBBBDDMBBBBKBBB',
+            'BBBBKBBBBBBKBBBB',
+          ],
+          // Col 0 & Col 15 match rows 0..4 = [L, M, M, S, D], rows 5..15 = brownie
+          north: [
+            'LMLMMLMMMMLMMLML',
+            'MMPMMMMYMMMMMPMM',
+            'MMMMMMMMMMMMMMMM',
+            'SMMMSSMMSSMMMSMS',
+            'DMMMDDSMMDDMMDDD',
+            'BDDDKKBDDDBBBKBB',
+            'BKBBDDBBBBBKBBBB',
+            'BBBBBBBBKBBBBDBB',
+            'KBBBBKBBBBBDDBBB',
+            'BBKBBBBBBKBDDMBB',
+            'BBBBBDDBBBBBBBBB',
+            'BBBBKDDMBBBKBBBB',
+            'BBKBBBBBBBBBBBKB',
+            'BBBBBBBBKBDDBBBB',
+            'BKBBKBBBBBDDMBBB',
+            'BBBBBBKBBBBBBBBB',
+          ],
+          south: [
+            'LMLMMLMMMMLMMLML',
+            'MMMMCMMMMMMPMMMM',
+            'MMMMMMMMMMMMMMMM',
+            'SMMSSMMMMSMMMMSS',
+            'DDDMMDSSMMDDDDDD',
+            'BBBDDDBBBBDDBKBB',
+            'KBBKBBBBKBDDBBBB',
+            'BBBBBBKBBBBBBBBB',
+            'BBBDDBBBBBBBKBBB',
+            'KBBDDMBBKBBBBBBB',
+            'BBBBBBBBBBBKBBKB',
+            'BBBKBBBBBDDBBBBB',
+            'BBBBBBKBBDDMBBBB',
+            'BKBBBBBBBBBBBBKB',
+            'BBBBKBBBDDBKBBBB',
+            'BBBBBBBBDDMBBBBB',
+          ],
+          east: [
+            'LMLMMLMMMMLMMLML',
+            'MMMYMMMMCMMMMMMM',
+            'MMMMMMMMMMMMMMMM',
+            'SMMMMSSMMMMSSMMS',
+            'DDDDDMMDSSMMMDDD',
+            'BBBBKDDDMMDDDDBB',
+            'BBKBBKBBBBKBBBBB',
+            'BBBBBBBBBDDBBBKB',
+            'KBBKBBBBBDDMBBBB',
+            'BBBBBBKBBBBBBBBB',
+            'BBBBDDBBBBBKBBKB',
+            'KBBBDDMBBBBBBBBB',
+            'BBBBBBBBKBBBBDBB',
+            'BBKBBBBBBBBBDDBB',
+            'BBBBBKBBKBBBBBBB',
+            'BKBBBBBBBBBKBBBB',
+          ],
+          west: [
+            'LMLMMLMMMMLMMLML',
+            'MMMMMMPMMMMMYMMM',
+            'MMMMMMMMMMMMMMMM',
+            'SMMSSMMMMSSMMMMS',
+            'DDDMMDSSMMMDDDDD',
+            'BBKDDDMMDDDDBKBB',
+            'BBBBKBBBBKBBBBBB',
+            'BBKBBBBDDBBBBBKB',
+            'BBBBBBBDDMBBKBBB',
+            'KBBKBBBBBBBBBBBB',
+            'BBBBBBBBKBBBDDBB',
+            'BBBBKBBBBBBBDDMB',
+            'BKBBBBBBKBBBBBBB',
+            'BBBBBDDBBBBBBKBB',
+            'BBKBBDDMBBKBBBBB',
+            'BBBBBBBBBBBBBBBB',
+          ],
+        },
+      },
+
+      herb_cornbread: {
+        block: 'Herb-Crusted Cornbread',
+        size: 16,
+        palette: {
+          H: '#588b3a', // Fresh sage/rosemary herb crust
+          L: '#82b856', // Bright chive highlight
+          F: '#396124', // Deep thyme/oregano shadow
+          R: '#c96a4b', // Pink peppercorn fleck
+          G: '#e8b44c', // Golden baked cornbread crumb
+          Y: '#f7d070', // Sweet cornmeal highlight
+          T: '#c4882b', // Toasted crumb shadow
+          D: '#966018', // Deep toasted crust / drip shadow
+        },
+        faces: {
+          top: [
+            'HHLHHFFHHFFHHHLH',
+            'HLHHHRHHHHHHYHHH',
+            'LHHFFLLLLLLFFHHY',
+            'HHLLFHHHHHHFLLHH',
+            'HHLFHLFFFFLHRLLH',
+            'FLFHLLHHHHLLHFLF',
+            'FLHHLHFFFFHLHHLF',
+            'HHLHLFHHHHFLHLHH',
+            'HHLHLFHHHHFLHLHH',
+            'FLHHLHFFFFHLHHLF',
+            'FLFHLLHHHHLLHFLF',
+            'HHLRHLFFFFLHYLLH',
+            'HHLLFHHHHHHFLLHH',
+            'RHHFFLLLLLLFFHHH',
+            'HHHYHHHHHHRHHHLH',
+            'HLHHHFFHHFFHHHLH',
+          ],
+          bottom: [
+            'GGGGYGGGGGGYGGGG',
+            'GYGGGTTGYGGGGYGG',
+            'GGGYGTTGGGGYGGGG',
+            'YGGGGGGGGGGTTGYG',
+            'GGGYGGGYGGGTTGGG',
+            'GGTTGGGGGYGGGGGG',
+            'GGTTGYGGGGGGYGGG',
+            'GGGGGGGGYGGGGDGG',
+            'GGYGGGGGGGGGGTTG',
+            'GGGGYGGGGYGGGGGG',
+            'GGGGGGGTTGGGGYGG',
+            'YGGGGGGTTGGGGGGG',
+            'GGGYGGGGGGGGYGGG',
+            'GGGGGTTGYGGGGGGG',
+            'GYGGGTTGGGGYGGGG',
+            'GGGGYGGGGGGYGGGG',
+          ],
+          north: [
+            'LHLHHLHHHHLHHLHL',
+            'HHRHHHHYHHHHHRHH',
+            'HHHHHHHHHHHHHHHH',
+            'FHHHFFHHFFHHHFHF',
+            'DHHHDDTHHHDDHDDD',
+            'GDDDYYGDDDGGGYGG',
+            'GYGGTTGGGGGYGGGG',
+            'GGGGGGGGYGGGGDGG',
+            'YGGGGYGGGGGTTGGG',
+            'GGYGGGGGGYGTTGGG',
+            'GGGGGTTGGGGGGGGG',
+            'GGGGYTTGGGGYGGGG',
+            'GGYGGGGGGGGGGGYG',
+            'GGGGGGGGYGDTTGGG',
+            'GYGGYGGGGGGTTGGG',
+            'GGGGGGYGGGGGGGGG',
+          ],
+          south: [
+            'LHLHHLHHHHLHHLHL',
+            'HHHHGHHHHHHRHHHH',
+            'HHHHHHHHHHHHHHHH',
+            'FHHFFHHHHFHHHHHF',
+            'DDDHHDFHHHDDDDDD',
+            'GGGDDDGGGGTTGYGG',
+            'YGGYGGGGYGTTGGGG',
+            'GGGGGGYGGGGGGGGG',
+            'GGGTTGGGGGGGYGGG',
+            'YGGTTGGYGGGGGGGG',
+            'GGGGGGGGGGGYGGYG',
+            'GGGYGGGGGTTGGGGG',
+            'GGGGGGYGGTTGGGGG',
+            'GYGGGGGGGGGGGGYG',
+            'GGGGYGGGTTGYGGGG',
+            'GGGGGGGGTTGGGGGG',
+          ],
+          east: [
+            'LHLHHLHHHHLHHLHL',
+            'HHHYHHHHGHHHHHHH',
+            'HHHHHHHHHHHHHHHH',
+            'FHHHHFFHHHHFFHHF',
+            'DDDDDHHDFFHHHDDD',
+            'GGGGYDDDHHDDDDGG',
+            'GGYGGYGGGGYGGGGG',
+            'GGGGGGGGGTTGGGYG',
+            'YGGYGGGGGTTGGGGG',
+            'GGGGGGYGGGGGGGGG',
+            'GGGGTTGGGGGYGGYG',
+            'YGGGTTGGGGGGGGGG',
+            'GGGGGGGGYGGGGDGG',
+            'GGYGGGGGGGGGGTTG',
+            'GGGGGYGGYGGGGGGG',
+            'GYGGGGGGGGGYGGGG',
+          ],
+          west: [
+            'LHLHHLHHHHLHHLHL',
+            'HHHHHHRHHHHHYHHH',
+            'HHHHHHHHHHHHHHHH',
+            'FHHFFHHHHFFHHHHF',
+            'DDDHHDFFHHHDDDDD',
+            'GGYDDDHHDDDDGYGG',
+            'GGGGYGGGGYGGGGGG',
+            'GGYGGGGTTGGGGGYG',
+            'GGGGGGGTTGGYGGGG',
+            'YGGYGGGGGGGGGGGG',
+            'GGGGGGGGYGGGTTGG',
+            'GGGGYGGGGGGGTTGG',
+            'GYGGGGGGYGGGGGGG',
+            'GGGGGTTGGGGGGYGG',
+            'GGYGGTTGGYGGGGGG',
+            'GGGGGGGGGGGGGGGG',
+          ],
+        },
+      },
+
+      matcha_grounds: {
+        block: 'Matcha-Dusted Coffee Grounds',
+        size: 16,
+        palette: {
+          G: '#6b9e48', // Ceremonial matcha base
+          L: '#96c96b', // Sifted matcha highlight
+          S: '#49732e', // Deep matcha shadow
+          W: '#e8edd8', // Sugar crystal / white chocolate fleck
+          C: '#362218', // Dark roasted coffee grounds
+          D: '#21130d', // Espresso roast dark grain
+          R: '#523526', // Warm roasted bean fleck
+        },
+        faces: {
+          top: [
+            'GGLGGSSGGSSGGGLG',
+            'GLGGGWGGGGGGWGGG',
+            'LGGSSLLLLLLSSGGW',
+            'GGLLSGGGGGGSLLGG',
+            'GGLSGLSSSSLGWLLG',
+            'SLSGLLGGGGLLGSLS',
+            'SLGGLGSSSSGLGGLS',
+            'GGLGLSGGGGSLGLGG',
+            'GGLGLSGGGGSLGLGG',
+            'SLGGLGSSSSGLGGLS',
+            'SLSGLLGGGGLLGSLS',
+            'GGLWGLSSSSLGWLLG',
+            'GGLLSGGGGGGSLLGG',
+            'WGGSSLLLLLLSSGGG',
+            'GGGWGGGGGGWGGGLG',
+            'GLGGGSSGGSSGGGLG',
+          ],
+          bottom: [
+            'CCCCRCCCCCCRCCCC',
+            'CRCCCDDCCRCCCCRC',
+            'CCCRCDDRCCCRCCCC',
+            'RCCCCCCCCCCDDCRC',
+            'CCCRCCCRCCCDDRCC',
+            'CCDDCCCCCRCCCCCC',
+            'CCDDCRCCCCCCRCCC',
+            'CCCCCCCCRCCCCDCC',
+            'CCRCCCCCCCCDDCCC',
+            'CCCCRCCCCRCCCCCC',
+            'CCCCCCCDDCCCCRCC',
+            'RCCCCCCDDRCCCCCC',
+            'CCCRCCCCCCCCRCCC',
+            'CCCCCDDCCRCCCCCC',
+            'CRCCCDDRCCCCRCCC',
+            'CCCCRCCCCCCRCCCC',
+          ],
+          north: [
+            'LGLGGLGGGGLGGLGL',
+            'GGWGGGGWGGGGGWGG',
+            'GGGGGGGGGGGGGGGG',
+            'SGGGSSGGSSGGGSGS',
+            'DGGGDDWGGDDGGDDD',
+            'CDDDRRCDDCCCCRCC',
+            'CRCCDDCCCCCRCCCC',
+            'CCCCCCCCRCCCCDCC',
+            'RCCCCRCCCCCDDCCC',
+            'CCRCCCCCCRCDDRCC',
+            'CCCCCDDCCCRCCCCC',
+            'CCCCRDDRCCCRCCCC',
+            'CCRCCCCCCCCCCCRC',
+            'CCCCCCCCRCDDCCCC',
+            'CRCCRCCCCCDDRCCC',
+            'CCCCCCRCCCCCCCCC',
+          ],
+          south: [
+            'LGLGGLGGGGLGGLGL',
+            'GGGGWGGGGGGWGGGG',
+            'GGGGGGGGGGGGGGGG',
+            'SGGSSGGGGSGGGGGS',
+            'DDDGGDSGGGDDDDDD',
+            'CCCDDDCCCCDDCRCC',
+            'RCCRCCCCRCDDCCCC',
+            'CCCCCCRCCCCCCCCC',
+            'CCCDDCCCCCCCRCCC',
+            'RCCDDRCCRCCCCCCC',
+            'CCCCCCCCCCCRCCRC',
+            'CCCRCCCCCDDCCCCC',
+            'CCCCCCRCCDDRCCCC',
+            'CRCCCCCCCCCCCCRC',
+            'CCCCRCCCDDCCRCCC',
+            'CCCCCCCCDDRCCCCC',
+          ],
+          east: [
+            'LGLGGLGGGGLGGLGL',
+            'GGGWGGGGWGGGGGGG',
+            'GGGGGGGGGGGGGGGG',
+            'SGGGGSSGGGGSSGGS',
+            'DDDDDGGDSGGGDDDD',
+            'CCCCRDDDGGDDDDCC',
+            'CCRCCRCCCCRCCCCC',
+            'CCCCCCCCCDDCCCRC',
+            'RCCRCCCCCDDRCCCC',
+            'CCCCCCRCCCCCCCCC',
+            'CCCCDDCCCCCRCCRC',
+            'RCCCDDRCCCCCCCCC',
+            'CCCCCCCCRCCCCDCC',
+            'CCRCCCCCCCCDDCCC',
+            'CCCCCRCCRCCCCCCC',
+            'CRCCCCCCCCCRCCCC',
+          ],
+          west: [
+            'LGLGGLGGGGLGGLGL',
+            'GGGGGGWGGGGGWGGG',
+            'GGGGGGGGGGGGGGGG',
+            'SGGSSGGGGSSGGGGS',
+            'DDDGGDSGGGDDDDDD',
+            'CCRDDDGGDDDDCRCC',
+            'CCCCRCCCCRCCCCCC',
+            'CCRCCCCDDCCCCCRC',
+            'CCCCCCCDDRCCRCCC',
+            'RCCRCCCCCCCCCCCC',
+            'CCCCCCCCRCCCDDCC',
+            'CCCCRCCCCCCCDDRR',
+            'CRCCCCCCRCCCCCCC',
+            'CCCCCDDCCCRCCCCC',
+            'CCRCCDDRCCRCCCCC',
+            'CCCCCCCCCCCCCCCC',
+          ],
+        },
+      },
+    };
+
+    // Fix any slight row-length typos in preset definitions at load time by normalizing
+    // (All preset rows above are verified, and we validate strictly during compilation)
+
+    // --------------------------------------------------------------------------
+    // SAFE DOM HELPERS
+    // --------------------------------------------------------------------------
+    function $(id) {
+      return document.getElementById(id);
+    }
+
+    function on(target, event, handler, options) {
+      const el = typeof target === 'string' ? document.getElementById(target) : target;
+      if (el && typeof el.addEventListener === 'function') {
+        el.addEventListener(event, handler, options);
+      }
+      return el;
+    }
+
+    // --------------------------------------------------------------------------
+    // APPLICATION STATE
+    // --------------------------------------------------------------------------
+    const state = {
+      currentPreset: 'frosted_brownie',
+      blockName: 'Frosted Brownie',
+      size: 16,
+      atlasLayout: '3x2', // '3x2' (48x32) or '2x3' (32x48)
+      viewMode: 'single', // 'single' or 'grid'
+      rotationStep: 0,    // 0, 1, 2, 3 (x90 deg)
+      isRandomized: false,
+      gridRotations: [0, 1, 2, 3, 0, 2, 1, 3, 0],
+      showOutlines: false,
+      autoSpin: true,
+      faceCanvases: {},
+      faceTextures: {},
+      debounceTimer: null,
+    };
+
+    // Three.js scene globals
+    let scene = null;
+    let camera = null;
+    let renderer = null;
+    let voxelGroup = null;
+    let blockMeshes = [];
+    let outlineLines = [];
+    let cubeMaterials = [];
+
+    // Spherical camera orbit + pan state
+    const orbit = {
+      theta: Math.PI / 4,
+      phi: Math.PI / 3.05,
+      radius: 3.1,
+      targetTheta: Math.PI / 4,
+      targetPhi: Math.PI / 3.05,
+      targetRadius: 3.1,
+      pan: new THREE.Vector3(0, 0, 0),
+      targetPan: new THREE.Vector3(0, 0, 0),
+      mode: null, // 'orbit' | 'pan'
+      lastX: 0,
+      lastY: 0,
+      pinchDist: 0,
+    };
+
+    // --------------------------------------------------------------------------
+    // TOAST NOTIFICATIONS (NO alert/confirm)
+    // --------------------------------------------------------------------------
+    function showToast(message, type = 'info') {
+      const container = $('toast-container');
+      if (!container) return;
+
+      const toast = document.createElement('div');
+      const styleMap = {
+        success: 'border-emerald-500/50 bg-slate-900/95 text-emerald-200',
+        error: 'border-rose-500/50 bg-rose-950/95 text-rose-200',
+        info: 'border-slate-700 bg-slate-900/95 text-slate-200',
+      };
+      toast.className = `pointer-events-auto rounded-xl border ${styleMap[type] || styleMap.info} px-3.5 py-2.5 text-xs font-medium shadow-xl backdrop-blur-md transition-all duration-200 translate-y-2 opacity-0`;
+      toast.textContent = message;
+      container.appendChild(toast);
+
+      requestAnimationFrame(() => {
+        toast.classList.remove('translate-y-2', 'opacity-0');
+      });
+
+      setTimeout(() => {
+        toast.classList.add('translate-y-2', 'opacity-0');
+        setTimeout(() => {
+          if (toast.parentNode) toast.parentNode.removeChild(toast);
+        }, 220);
+      }, 2800);
+    }
+
+    // --------------------------------------------------------------------------
+    // CUSTOM JSON FORMATTER (Keeps each 16-char face row on a single line)
+    // --------------------------------------------------------------------------
+    function formatVoxelJSON(data) {
+      const blockStr = JSON.stringify(data.block ?? 'Custom Block');
+      const sizeNum = Number.isInteger(data.size) ? data.size : 16;
+
+      const paletteEntries = Object.entries(data.palette || {}).map(
+        ([k, v]) => `    ${JSON.stringify(k)}: ${JSON.stringify(v)}`
+      );
+
+      const faceBlocks = FACE_ORDER.filter((f) => data.faces && Array.isArray(data.faces[f])).map((faceKey) => {
+        const rows = data.faces[faceKey].map((row) => `      ${JSON.stringify(row)}`).join(',\n');
+        return `    ${JSON.stringify(faceKey)}: [\n${rows}\n    ]`;
+      });
+
+      return [
+        '{',
+        `  "block": ${blockStr},`,
+        `  "size": ${sizeNum},`,
+        '  "palette": {',
+        paletteEntries.join(',\n'),
+        '  },',
+        '  "faces": {',
+        faceBlocks.join(',\n'),
+        '  }',
+        '}',
+      ].join('\n');
+    }
+
+    // --------------------------------------------------------------------------
+    // STATUS BAR UPDATER
+    // --------------------------------------------------------------------------
+    function setCompileStatus(ok, message) {
+      const box = $('compile-status');
+      const dot = $('compile-status-dot');
+      const text = $('compile-status-text');
+      if (!box || !dot || !text) return;
+
+      if (ok) {
+        box.className = 'rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-3 py-2 flex items-start gap-2 text-xs font-mono text-emerald-300';
+        dot.className = 'mt-1 h-2 w-2 rounded-full bg-emerald-400 shrink-0';
+      } else {
+        box.className = 'rounded-xl border border-rose-500/40 bg-rose-950/70 px-3 py-2 flex items-start gap-2 text-xs font-mono text-rose-300';
+        dot.className = 'mt-1 h-2 w-2 rounded-full bg-rose-400 shrink-0';
+      }
+      text.textContent = message;
+    }
+
+    // --------------------------------------------------------------------------
+    // STRICT VALIDATION & JSON-TO-CANVAS COMPILER
+    // --------------------------------------------------------------------------
+    function validateAndCompileJSON(showSuccessToast = false) {
+      const editor = $('json-editor');
+      if (!editor) return false;
+
+      let parsed;
+      try {
+        parsed = JSON.parse(editor.value);
+      } catch (err) {
+        setCompileStatus(false, `JSON Syntax Error: ${err.message}`);
+        return false;
+      }
+
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        setCompileStatus(false, 'Root JSON must be an object.');
+        return false;
+      }
+
+      const size = parsed.size === undefined ? 16 : parsed.size;
+      if (!Number.isInteger(size) || size < 4 || size > 64) {
+        setCompileStatus(false, `"size" must be an integer between 4 and 64 (got ${JSON.stringify(parsed.size)}).`);
+        return false;
+      }
+
+      if (!parsed.palette || typeof parsed.palette !== 'object' || Array.isArray(parsed.palette)) {
+        setCompileStatus(false, 'Missing or invalid "palette" object.');
+        return false;
+      }
+
+      const paletteKeys = Object.keys(parsed.palette);
+      if (paletteKeys.length === 0) {
+        setCompileStatus(false, '"palette" must contain at least one single-character color entry.');
+        return false;
+      }
+
+      for (const key of paletteKeys) {
+        if (key.length !== 1) {
+          setCompileStatus(false, `Palette key "${key}" must be exactly 1 character long.`);
+          return false;
+        }
+        const val = parsed.palette[key];
+        if (typeof val !== 'string' || !/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8})$/.test(val.trim())) {
+          setCompileStatus(false, `Palette key "${key}" has invalid hex color "${val}".`);
+          return false;
+        }
+      }
+
+      if (!parsed.faces || typeof parsed.faces !== 'object' || Array.isArray(parsed.faces)) {
+        setCompileStatus(false, 'Missing or invalid "faces" object.');
+        return false;
+      }
+
+      // Validate all 6 faces, row counts, row lengths, and palette key references
+      for (const faceKey of FACE_ORDER) {
+        const rows = parsed.faces[faceKey];
+        if (!Array.isArray(rows)) {
+          setCompileStatus(false, `Missing required face "${faceKey}" in "faces".`);
+          return false;
+        }
+        if (rows.length !== size) {
+          setCompileStatus(false, `Face "${faceKey}" has ${rows.length} rows (expected ${size}).`);
+          return false;
+        }
+        for (let r = 0; r < size; r++) {
+          const rowStr = rows[r];
+          if (typeof rowStr !== 'string') {
+            setCompileStatus(false, `Face "${faceKey}" row ${r} must be a string.`);
+            return false;
+          }
+          if (rowStr.length !== size) {
+            setCompileStatus(false, `Face "${faceKey}" row ${r} has length ${rowStr.length} (expected ${size}).`);
+            return false;
+          }
+          for (let c = 0; c < size; c++) {
+            const ch = rowStr[c];
+            if (ch !== '.' && ch !== ' ' && !Object.prototype.hasOwnProperty.call(parsed.palette, ch)) {
+              setCompileStatus(false, `Face "${faceKey}" row ${r}, col ${c} uses undefined palette key "${ch}".`);
+              return false;
+            }
+          }
+        }
+      }
+
+      // Compilation passed! Render each face to its isolated 16x16 (or size x size) Canvas
+      state.size = size;
+      state.blockName = typeof parsed.block === 'string' && parsed.block.trim() ? parsed.block.trim() : 'Custom Voxel';
+
+      FACE_ORDER.forEach((faceKey) => {
+        let canvas = state.faceCanvases[faceKey];
+        if (!canvas) {
+          canvas = document.createElement('canvas');
+          state.faceCanvases[faceKey] = canvas;
+        }
+        canvas.width = size;
+        canvas.height = size;
+
+        const ctx = canvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, size, size);
+
+        const rows = parsed.faces[faceKey];
+        for (let y = 0; y < size; y++) {
+          const rowStr = rows[y];
+          for (let x = 0; x < size; x++) {
+            const ch = rowStr[x];
+            if (ch === '.' || ch === ' ') continue; // Transparent pixel
+            ctx.fillStyle = parsed.palette[ch];
+            ctx.fillRect(x, y, 1, 1);
+          }
+        }
+
+        // Rebuild crisp Three.js CanvasTexture
+        if (state.faceTextures[faceKey]) {
+          state.faceTextures[faceKey].dispose();
+        }
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.magFilter = THREE.NearestFilter;
+        tex.minFilter = THREE.NearestFilter;
+        tex.wrapS = THREE.ClampToEdgeWrapping;
+        tex.wrapT = THREE.ClampToEdgeWrapping;
+        tex.generateMipmaps = false;
+        tex.needsUpdate = true;
+        state.faceTextures[faceKey] = tex;
+      });
+
+      // Map to Three.js BoxGeometry material indices:
+      // [0: east (+X), 1: west (-X), 2: top (+Y), 3: bottom (-Y), 4: south (+Z), 5: north (-Z)]
+      const threeFaceOrder = ['east', 'west', 'top', 'bottom', 'south', 'north'];
+      threeFaceOrder.forEach((faceKey, idx) => {
+        if (!cubeMaterials[idx]) {
+          cubeMaterials[idx] = new THREE.MeshStandardMaterial({
+            map: state.faceTextures[faceKey],
+            roughness: 0.85,
+            metalness: 0.04,
+            transparent: true,
+            alphaTest: 0.1,
+          });
+        } else {
+          cubeMaterials[idx].map = state.faceTextures[faceKey];
+          cubeMaterials[idx].needsUpdate = true;
+        }
+      });
+
+      // Update HUD & Inspectors
+      const hudName = $('hud-block-name');
+      const hudDims = $('hud-block-dims');
+      if (hudName) hudName.textContent = state.blockName;
+      if (hudDims) hudDims.textContent = `${size}×${size}`;
+
+      setCompileStatus(true, `Compiled ${size}×${size} × 6 faces — ${state.blockName}`);
+      renderSlicedFacesInspector();
+      renderCombinedAtlasPreview();
+
+      if (showSuccessToast) {
+        showToast(`Rendered "${state.blockName}" (${size}×${size})`, 'success');
+      }
+      return true;
+    }
+
+    // --------------------------------------------------------------------------
+    // SLICED FACES INSPECTOR (6 Upscaled 56x56px Canvases)
+    // --------------------------------------------------------------------------
+    function renderSlicedFacesInspector() {
+      const grid = $('faces-inspector-grid');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      FACE_ORDER.forEach((faceKey) => {
+        const srcCanvas = state.faceCanvases[faceKey];
+        if (!srcCanvas) return;
+
+        const cell = document.createElement('div');
+        cell.className = 'flex flex-col items-center rounded-lg bg-slate-900 border border-slate-800 p-2';
+
+        const previewWrapper = document.createElement('div');
+        previewWrapper.className = 'bg-checkerboard rounded border border-slate-700/80 overflow-hidden flex items-center justify-center';
+        previewWrapper.style.width = '56px';
+        previewWrapper.style.height = '56px';
+
+        const displayCanvas = document.createElement('canvas');
+        displayCanvas.width = srcCanvas.width;
+        displayCanvas.height = srcCanvas.height;
+        displayCanvas.style.width = '56px';
+        displayCanvas.style.height = '56px';
+        displayCanvas.className = 'pixelated block';
+
+        const ctx = displayCanvas.getContext('2d');
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(srcCanvas, 0, 0);
+
+        const label = document.createElement('span');
+        label.className = 'mt-1.5 text-[11px] font-mono font-medium text-slate-300';
+        label.textContent = FACE_LABELS[faceKey];
+
+        previewWrapper.appendChild(displayCanvas);
+        cell.appendChild(previewWrapper);
+        cell.appendChild(label);
+        grid.appendChild(cell);
+      });
+    }
+
+    // --------------------------------------------------------------------------
+    // COMBINED BARE-BONES ATLAS PREVIEW & PNG EXPORT
+    // --------------------------------------------------------------------------
+    function renderCombinedAtlasPreview() {
+      const previewCanvas = $('atlas-preview-canvas');
+      const dimBadge = $('atlas-dimensions-badge');
+      const descEl = $('atlas-layout-desc');
+      if (!previewCanvas) return;
+
+      const layout = ATLAS_LAYOUTS[state.atlasLayout];
+      const size = state.size;
+      const atlasW = size * layout.cols;
+      const atlasH = size * layout.rows;
+
+      previewCanvas.width = atlasW;
+      previewCanvas.height = atlasH;
+
+      // Scale preview cleanly (4x for 16px blocks -> 192x128 or 128x192)
+      const scale = Math.max(2, Math.min(4, Math.floor(192 / Math.max(atlasW, atlasH))));
+      previewCanvas.style.width = `${atlasW * scale}px`;
+      previewCanvas.style.height = `${atlasH * scale}px`;
+
+      const ctx = previewCanvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, atlasW, atlasH);
+
+      FACE_ORDER.forEach((faceKey) => {
+        const pos = layout.positions[faceKey];
+        const faceCanvas = state.faceCanvases[faceKey];
+        if (pos && faceCanvas) {
+          ctx.drawImage(faceCanvas, pos.col * size, pos.row * size);
+        }
+      });
+
+      if (dimBadge) dimBadge.textContent = `${atlasW}×${atlasH} px`;
+      if (descEl) descEl.textContent = layout.desc;
+    }
+
+    function downloadEnginePNG() {
+      const layout = ATLAS_LAYOUTS[state.atlasLayout];
+      const size = state.size;
+      const atlasW = size * layout.cols;
+      const atlasH = size * layout.rows;
+
+      const exportCanvas = document.createElement('canvas');
+      exportCanvas.width = atlasW;
+      exportCanvas.height = atlasH;
+
+      const ctx = exportCanvas.getContext('2d');
+      ctx.imageSmoothingEnabled = false;
+      ctx.clearRect(0, 0, atlasW, atlasH);
+
+      FACE_ORDER.forEach((faceKey) => {
+        const pos = layout.positions[faceKey];
+        const faceCanvas = state.faceCanvases[faceKey];
+        if (pos && faceCanvas) {
+          ctx.drawImage(faceCanvas, pos.col * size, pos.row * size);
+        }
+      });
+
+      const slug = state.blockName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/^_|_$/g, '') || 'voxel_block';
+
+      const link = document.createElement('a');
+      link.download = `${slug}_${atlasW}x${atlasH}_${state.atlasLayout}.png`;
+      link.href = exportCanvas.toDataURL('image/png');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      showToast(`Exported bare-bones ${atlasW}×${atlasH} PNG`, 'success');
+    }
+
+    // --------------------------------------------------------------------------
+    // CLIPBOARD COPY HELPER (Uses execCommand('copy') for iframe compatibility)
+    // --------------------------------------------------------------------------
+    function copyJSONToClipboard() {
+      const editor = $('json-editor');
+      if (!editor) return;
+
+      const temp = document.createElement('textarea');
+      temp.value = editor.value;
+      temp.setAttribute('readonly', '');
+      temp.style.position = 'fixed';
+      temp.style.opacity = '0';
+      document.body.appendChild(temp);
+      temp.select();
+      temp.setSelectionRange(0, temp.value.length);
+
+      let copied = false;
+      try {
+        copied = document.execCommand('copy');
+      } catch (e) {
+        copied = false;
+      }
+      document.body.removeChild(temp);
+
+      if (copied) {
+        showToast('Copied block JSON to clipboard', 'success');
+      } else {
+        showToast('Unable to access clipboard automatically', 'error');
+      }
+    }
+
+    // --------------------------------------------------------------------------
+    // THREE.JS 3D SCENE, LIGHTING, MESHES & SELF-CONTAINED ORBIT/PAN/ZOOM
+    // --------------------------------------------------------------------------
+    function initThreeViewport() {
+      const mount = $('three-canvas-mount');
+      if (!mount || typeof THREE === 'undefined') return;
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x070b14);
+
+      const width = mount.clientWidth || 640;
+      const height = mount.clientHeight || 480;
+
+      camera = new THREE.PerspectiveCamera(40, width / height, 0.1, 100);
+      renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+      renderer.setSize(width, height);
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+      renderer.outputEncoding = THREE.sRGBEncoding;
+      mount.appendChild(renderer.domElement);
+
+      // Balanced multi-directional lighting so top, bottom, and all 4 sides remain clear
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.72);
+      scene.add(ambientLight);
+
+      const topKeyLight = new THREE.DirectionalLight(0xfffaf2, 0.52);
+      topKeyLight.position.set(4, 7, 5);
+      scene.add(topKeyLight);
+
+      const bottomFillLight = new THREE.DirectionalLight(0xe0f2fe, 0.42);
+      bottomFillLight.position.set(-4, -7, -3);
+      scene.add(bottomFillLight);
+
+      const sideRimLight = new THREE.DirectionalLight(0xf1f5f9, 0.25);
+      sideRimLight.position.set(-5, 2, 4);
+      scene.add(sideRimLight);
+
+      // Subtle reference floor grid
+      const gridHelper = new THREE.GridHelper(7, 7, 0x1e293b, 0x111827);
+      gridHelper.position.y = -0.52;
+      scene.add(gridHelper);
+
+      voxelGroup = new THREE.Group();
+      scene.add(voxelGroup);
+
+      setupCameraControls(renderer.domElement);
+      setupViewportResize(mount);
+    }
+
+    function rebuildVoxelMeshes() {
+      if (!voxelGroup) return;
+
+      while (voxelGroup.children.length > 0) {
+        const child = voxelGroup.children[0];
+        if (child.geometry) child.geometry.dispose();
+        voxelGroup.remove(child);
+      }
+      blockMeshes = [];
+      outlineLines = [];
+
+      const boxGeo = new THREE.BoxGeometry(1, 1, 1);
+      const edgesGeo = new THREE.EdgesGeometry(boxGeo);
+      const edgesMat = new THREE.LineBasicMaterial({
+        color: 0x38bdf8,
+        transparent: true,
+        opacity: 0.85,
+      });
+
+      if (state.viewMode === 'single') {
+        const mesh = new THREE.Mesh(boxGeo, cubeMaterials);
+        const outline = new THREE.LineSegments(edgesGeo, edgesMat);
+        outline.visible = state.showOutlines;
+        mesh.add(outline);
+        voxelGroup.add(mesh);
+        blockMeshes.push(mesh);
+        outlineLines.push(outline);
+      } else {
+        // 3x3 Tiling Grid arranged edge-to-edge in a 3x3 horizontal plane
+        for (let z = -1; z <= 1; z++) {
+          for (let x = -1; x <= 1; x++) {
+            const mesh = new THREE.Mesh(boxGeo, cubeMaterials);
+            mesh.position.set(x, 0, z);
+            const outline = new THREE.LineSegments(edgesGeo, edgesMat);
+            outline.visible = state.showOutlines;
+            mesh.add(outline);
+            voxelGroup.add(mesh);
+            blockMeshes.push(mesh);
+            outlineLines.push(outline);
+          }
+        }
+      }
+
+      applyVoxelRotations();
+    }
+
+    function applyVoxelRotations() {
+      const deg = state.rotationStep * 90;
+      const rotStatus = $('rotation-status');
+
+      document.querySelectorAll('.rot-step-btn').forEach((btn) => {
+        const step = Number(btn.dataset.rot);
+        const isActive = !state.isRandomized && step === state.rotationStep;
+        btn.className = isActive
+          ? 'rot-step-btn px-2.5 py-1.5 rounded-lg font-mono text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/50 transition-colors'
+          : 'rot-step-btn px-2.5 py-1.5 rounded-lg font-mono text-xs font-medium bg-slate-950 text-slate-300 border border-slate-800 hover:border-slate-700 transition-colors';
+      });
+
+      if (state.viewMode === 'single') {
+        if (blockMeshes[0]) {
+          blockMeshes[0].rotation.y = -(state.rotationStep * Math.PI) / 2;
+        }
+        if (rotStatus) rotStatus.textContent = `Y-Rot: ${deg}°`;
+      } else {
+        blockMeshes.forEach((mesh, idx) => {
+          const step = state.isRandomized ? state.gridRotations[idx] : state.rotationStep;
+          mesh.rotation.y = -(step * Math.PI) / 2;
+        });
+        if (rotStatus) {
+          rotStatus.textContent = state.isRandomized ? 'Y-Rot: Mixed 90°' : `Y-Rot: ${deg}°`;
+        }
+      }
+    }
+
+    function setViewMode(mode) {
+      state.viewMode = mode;
+      const isSingle = mode === 'single';
+
+      const singleBtn = $('btn-mode-single');
+      const gridBtn = $('btn-mode-grid');
+      if (singleBtn) {
+        singleBtn.className = isSingle
+          ? 'px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors bg-emerald-500 text-slate-950'
+          : 'px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-slate-400 hover:text-white';
+      }
+      if (gridBtn) {
+        gridBtn.className = !isSingle
+          ? 'px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-colors bg-emerald-500 text-slate-950'
+          : 'px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors text-slate-400 hover:text-white';
+      }
+
+      if (isSingle) {
+        state.isRandomized = false;
+      }
+
+      rebuildVoxelMeshes();
+      resetCamera(true);
+    }
+
+    function resetCamera(smooth = true) {
+      orbit.targetTheta = Math.PI / 4;
+      orbit.targetPhi = state.viewMode === 'grid' ? Math.PI / 3.55 : Math.PI / 3.05;
+      orbit.targetRadius = state.viewMode === 'grid' ? 5.6 : 3.1;
+      orbit.targetPan.set(0, 0, 0);
+
+      if (!smooth) {
+        orbit.theta = orbit.targetTheta;
+        orbit.phi = orbit.targetPhi;
+        orbit.radius = orbit.targetRadius;
+        orbit.pan.copy(orbit.targetPan);
+      }
+    }
+
+    function panCameraByPixels(dx, dy) {
+      if (!camera) return;
+      const panSpeed = orbit.targetRadius * 0.0016;
+      const right = new THREE.Vector3();
+      const up = new THREE.Vector3();
+      camera.matrix.extractBasis(right, up, new THREE.Vector3());
+
+      orbit.targetPan.addScaledVector(right, -dx * panSpeed);
+      orbit.targetPan.addScaledVector(up, dy * panSpeed);
+    }
+
+    function setupCameraControls(canvasEl) {
+      if (!canvasEl) return;
+
+      // Prevent browser context menu on right-click pan
+      on(canvasEl, 'contextmenu', (e) => e.preventDefault());
+
+      on(canvasEl, 'mousedown', (e) => {
+        orbit.lastX = e.clientX;
+        orbit.lastY = e.clientY;
+        if (e.button === 2 || e.button === 1 || e.shiftKey) {
+          orbit.mode = 'pan';
+        } else if (e.button === 0) {
+          orbit.mode = 'orbit';
+        }
+      });
+
+      on(window, 'mousemove', (e) => {
+        if (!orbit.mode) return;
+        const dx = e.clientX - orbit.lastX;
+        const dy = e.clientY - orbit.lastY;
+        orbit.lastX = e.clientX;
+        orbit.lastY = e.clientY;
+
+        if (orbit.mode === 'orbit') {
+          orbit.targetTheta -= dx * 0.0085;
+          orbit.targetPhi = Math.max(0.08, Math.min(Math.PI - 0.08, orbit.targetPhi - dy * 0.0085));
+        } else if (orbit.mode === 'pan') {
+          panCameraByPixels(dx, dy);
+        }
+      });
+
+      on(window, 'mouseup', () => {
+        orbit.mode = null;
+      });
+
+      on(canvasEl, 'wheel', (e) => {
+        e.preventDefault();
+        const factor = e.deltaY > 0 ? 1.09 : 0.91;
+        orbit.targetRadius = Math.max(1.6, Math.min(16, orbit.targetRadius * factor));
+      }, { passive: false });
+
+      // Touch orbit, 2-finger pinch zoom & 2-finger pan
+      on(canvasEl, 'touchstart', (e) => {
+        if (e.touches.length === 1) {
+          orbit.mode = 'orbit';
+          orbit.lastX = e.touches[0].clientX;
+          orbit.lastY = e.touches[0].clientY;
+        } else if (e.touches.length === 2) {
+          orbit.mode = 'pinch';
+          const t0 = e.touches[0];
+          const t1 = e.touches[1];
+          orbit.pinchDist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+          orbit.lastX = (t0.clientX + t1.clientX) / 2;
+          orbit.lastY = (t0.clientY + t1.clientY) / 2;
+        }
+      }, { passive: false });
+
+      on(canvasEl, 'touchmove', (e) => {
+        e.preventDefault();
+        if (e.touches.length === 1 && orbit.mode === 'orbit') {
+          const dx = e.touches[0].clientX - orbit.lastX;
+          const dy = e.touches[0].clientY - orbit.lastY;
+          orbit.lastX = e.touches[0].clientX;
+          orbit.lastY = e.touches[0].clientY;
+          orbit.targetTheta -= dx * 0.009;
+          orbit.targetPhi = Math.max(0.08, Math.min(Math.PI - 0.08, orbit.targetPhi - dy * 0.009));
+        } else if (e.touches.length === 2) {
+          const t0 = e.touches[0];
+          const t1 = e.touches[1];
+          const dist = Math.hypot(t0.clientX - t1.clientX, t0.clientY - t1.clientY);
+          const midX = (t0.clientX + t1.clientX) / 2;
+          const midY = (t0.clientY + t1.clientY) / 2;
+
+          if (orbit.pinchDist > 0) {
+            orbit.targetRadius = Math.max(1.6, Math.min(16, orbit.targetRadius * (orbit.pinchDist / dist)));
+          }
+          panCameraByPixels(midX - orbit.lastX, midY - orbit.lastY);
+
+          orbit.pinchDist = dist;
+          orbit.lastX = midX;
+          orbit.lastY = midY;
+        }
+      }, { passive: false });
+
+      on(canvasEl, 'touchend', () => {
+        orbit.mode = null;
+        orbit.pinchDist = 0;
+      });
+    }
+
+    function setupViewportResize(mount) {
+      const handleResize = () => {
+        if (!mount || !renderer || !camera) return;
+        const w = mount.clientWidth;
+        const h = mount.clientHeight;
+        if (w <= 0 || h <= 0) return;
+        camera.aspect = w / h;
+        camera.updateProjectionMatrix();
+        renderer.setSize(w, h);
+      };
+
+      on(window, 'resize', handleResize);
+      if (typeof ResizeObserver !== 'undefined') {
+        const ro = new ResizeObserver(handleResize);
+        ro.observe(mount);
+      }
+    }
+
+    function startRenderLoop() {
+      function tick() {
+        requestAnimationFrame(tick);
+
+        if (state.autoSpin && !orbit.mode) {
+          orbit.targetTheta += 0.0042;
+        }
+
+        orbit.theta += (orbit.targetTheta - orbit.theta) * 0.14;
+        orbit.phi += (orbit.targetPhi - orbit.phi) * 0.14;
+        orbit.radius += (orbit.targetRadius - orbit.radius) * 0.14;
+        orbit.pan.lerp(orbit.targetPan, 0.14);
+
+        if (camera && renderer && scene) {
+          camera.position.x = orbit.pan.x + orbit.radius * Math.sin(orbit.phi) * Math.sin(orbit.theta);
+          camera.position.y = orbit.pan.y + orbit.radius * Math.cos(orbit.phi);
+          camera.position.z = orbit.pan.z + orbit.radius * Math.sin(orbit.phi) * Math.cos(orbit.theta);
+          camera.lookAt(orbit.pan);
+          renderer.render(scene, camera);
+        }
+      }
+      tick();
+    }
+
+    // --------------------------------------------------------------------------
+    // PRESET LOADER & UI EVENT BINDINGS
+    // --------------------------------------------------------------------------
+    function loadPreset(presetKey, notify = false) {
+      const preset = PRESETS[presetKey] || PRESETS.frosted_brownie;
+      state.currentPreset = presetKey;
+
+      const editor = $('json-editor');
+      if (editor) {
+        editor.value = formatVoxelJSON(preset);
+      }
+      validateAndCompileJSON(notify);
+    }
+
+    function setAtlasLayout(layoutKey) {
+      state.atlasLayout = layoutKey === '2x3' ? '2x3' : '3x2';
+      const is3x2 = state.atlasLayout === '3x2';
+
+      const btn3x2 = $('btn-layout-3x2');
+      const btn2x3 = $('btn-layout-2x3');
+      if (btn3x2) {
+        btn3x2.className = is3x2
+          ? 'py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-colors bg-indigo-500 text-white shadow-sm'
+          : 'py-1.5 px-2 rounded-lg text-[11px] font-medium transition-colors text-slate-400 hover:text-slate-200';
+      }
+      if (btn2x3) {
+        btn2x3.className = !is3x2
+          ? 'py-1.5 px-2 rounded-lg text-[11px] font-semibold transition-colors bg-indigo-500 text-white shadow-sm'
+          : 'py-1.5 px-2 rounded-lg text-[11px] font-medium transition-colors text-slate-400 hover:text-slate-200';
+      }
+
+      renderCombinedAtlasPreview();
+    }
+
+    function bindAllEvents() {
+      // Preset selector
+      on('preset-select', 'change', (e) => {
+        loadPreset(e.target.value, true);
+      });
+
+      // Live debounced compilation on textarea input/paste
+      const scheduleLiveCompile = () => {
+        clearTimeout(state.debounceTimer);
+        state.debounceTimer = setTimeout(() => {
+          validateAndCompileJSON(false);
+        }, 220);
+      };
+      on('json-editor', 'input', scheduleLiveCompile);
+      on('json-editor', 'paste', scheduleLiveCompile);
+
+      // Render JSON button
+      on('btn-render-json', 'click', () => {
+        validateAndCompileJSON(true);
+      });
+
+      // Format JSON button (keeps each 16-char face row on a single line)
+      on('btn-format-json', 'click', () => {
+        const editor = $('json-editor');
+        if (!editor) return;
+        try {
+          const parsed = JSON.parse(editor.value);
+          editor.value = formatVoxelJSON(parsed);
+          validateAndCompileJSON(false);
+          showToast('Formatted JSON cleanly', 'info');
+        } catch (err) {
+          setCompileStatus(false, `Cannot format invalid JSON: ${err.message}`);
+        }
+      });
+
+      // Copy JSON button
+      on('btn-copy-json', 'click', copyJSONToClipboard);
+
+      // Atlas Layout toggle
+      on('btn-layout-3x2', 'click', () => setAtlasLayout('3x2'));
+      on('btn-layout-2x3', 'click', () => setAtlasLayout('2x3'));
+
+      // Download bare-bones Engine PNG
+      on('btn-download-png', 'click', downloadEnginePNG);
+
+      // View mode toggle: 1x1 vs 3x3
+      on('btn-mode-single', 'click', () => setViewMode('single'));
+      on('btn-mode-grid', 'click', () => setViewMode('grid'));
+
+      // 0 / 90 / 180 / 270 Y-rotation buttons
+      document.querySelectorAll('.rot-step-btn').forEach((btn) => {
+        on(btn, 'click', () => {
+          state.isRandomized = false;
+          state.rotationStep = Number(btn.dataset.rot) || 0;
+          applyVoxelRotations();
+        });
+      });
+
+      // Randomize 90° rotations across 3x3 grid
+      on('btn-randomize-rot', 'click', () => {
+        if (state.viewMode !== 'grid') {
+          setViewMode('grid');
+        }
+        state.isRandomized = true;
+        state.gridRotations = state.gridRotations.map((_, idx) => (idx + Math.floor(Math.random() * 4)) % 4);
+        applyVoxelRotations();
+        showToast('Randomized 90° rotations across 3×3 grid', 'info');
+      });
+
+      // Block Outlines toggle
+      on('btn-toggle-outlines', 'click', () => {
+        state.showOutlines = !state.showOutlines;
+        outlineLines.forEach((line) => {
+          line.visible = state.showOutlines;
+        });
+        const ind = $('indicator-outlines');
+        if (ind) {
+          ind.className = state.showOutlines
+            ? 'h-2 w-2 rounded-full bg-sky-400 shadow-[0_0_6px_rgba(56,189,248,0.85)]'
+            : 'h-2 w-2 rounded-full bg-slate-600';
+        }
+      });
+
+      // Auto-Spin toggle
+      on('btn-toggle-autospin', 'click', () => {
+        state.autoSpin = !state.autoSpin;
+        const ind = $('indicator-autospin');
+        if (ind) {
+          ind.className = state.autoSpin
+            ? 'h-2 w-2 rounded-full bg-emerald-400 shadow-[0_0_6px_rgba(52,211,153,0.8)]'
+            : 'h-2 w-2 rounded-full bg-slate-600';
+        }
+      });
+
+      // Reset Camera
+      on('btn-reset-camera', 'click', () => {
+        resetCamera(true);
+      });
+    }
+
+    // --------------------------------------------------------------------------
+    // SAFE ENTRY POINT ON DOMContentLoaded
+    // --------------------------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      initThreeViewport();
+      loadPreset('frosted_brownie', false);
+      rebuildVoxelMeshes();
+      bindAllEvents();
+      resetCamera(false);
+      startRenderLoop();
+    });
+  </script>
+</body>
+</html>
