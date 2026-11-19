@@ -77,7 +77,7 @@ function buildNavHtml(filename, isArticlesSubdir) {
         <nav aria-label="Primary" class="hidden md:flex items-center gap-8 text-xs font-bold tracking-widest">
           <a href="/case-studies" class="${proofDesktop}"${isProofActive    ? '' : ' data-title="Case studies &amp; outcomes"'}>The_Proof</a>
           <a href="/consulting"   class="${advisoryDesktop}"${isAdvisoryActive ? '' : ' data-title="Advisory &amp; strategy"'}>Advisory</a>
-          <a href="/labs"         class="${labsDesktop}"${isLabsActive     ? '' : ' data-title="Experiments &amp; builds"'}>Research_Labs</a>
+          <a href="/labs"         class="${labsDesktop}"${isLabsActive     ? '' : ' data-title="Experiments &amp; builds"'}>Game_Labs</a>
           <!--<a href="/articles"     class="${articlesDesktop}"${isArticlesActive ? '' : ' data-title="Whitepapers &amp; analyses"'}>Articles</a>-->
         </nav>
 
@@ -108,7 +108,7 @@ function buildNavHtml(filename, isArticlesSubdir) {
       <nav aria-label="Mobile" class="max-w-5xl mx-auto px-6 py-5 flex flex-col gap-5 text-xs font-bold tracking-widest">
         <a href="/case-studies" class="${proofMobile}">The_Proof</a>
         <a href="/consulting"   class="${advisoryMobile}">Advisory</a>
-        <a href="/labs"         class="${labsMobile}">Research_Labs</a>
+        <a href="/labs"         class="${labsMobile}">Game_Labs</a>
         <a href="/articles"     class="${articlesMobile}">Articles</a>
       </nav>
     </div>
@@ -121,7 +121,7 @@ function buildNavHtml(filename, isArticlesSubdir) {
 const SECTION_LABELS = {
   'case-studies': 'The_Proof',
   'consulting':   'Advisory',
-  'labs':         'Research_Labs',
+  'labs':         'Game_Labs',
   'articles':     'Articles',
 };
 

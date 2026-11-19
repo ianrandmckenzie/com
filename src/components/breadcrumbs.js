@@ -4,7 +4,7 @@
 const SECTION_LABELS = {
   'case-studies': 'The_Proof',
   'consulting':   'Advisory',
-  'labs':         'Research_Labs',
+  'labs':         'Game_Labs',
   'articles':     'Articles',
 };
 
