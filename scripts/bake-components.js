@@ -32,7 +32,7 @@ const ICON_SYSTEM = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 64
 function buildNavHtml(filename, isArticlesSubdir) {
   const isProofActive    = ['case-studies.html', 'jane-sites.html', 'failureunit.html', 'seo-case-study.html'].includes(filename);
   const isAdvisoryActive = filename === 'consulting.html';
-  const isLabsActive     = ['labs.html', 'spiral.html', 'voxel.html'].includes(filename);
+  const isLabsActive     = ['labs.html', 'spiral.html', 'voxel.html', 'cube-textures.html'].includes(filename);
   const isArticlesActive = filename === 'articles.html' || isArticlesSubdir;
   const isHomePage       = filename === 'index.html' || filename === '';
 
