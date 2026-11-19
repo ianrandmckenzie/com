@@ -79,8 +79,6 @@ function buildNavHtml(filename, isArticlesSubdir) {
           <a href="/consulting"   class="${advisoryDesktop}"${isAdvisoryActive ? '' : ' data-title="Advisory &amp; strategy"'}>Advisory</a>
           <a href="/labs"         class="${labsDesktop}"${isLabsActive     ? '' : ' data-title="Experiments &amp; builds"'}>Research_Labs</a>
           <!--<a href="/articles"     class="${articlesDesktop}"${isArticlesActive ? '' : ' data-title="Whitepapers &amp; analyses"'}>Articles</a>-->
-          <a href="/resume.pdf"
-             class="text-slate-900 dark:text-white border-b border-blue-500 pb-0.5 hover:border-slate-900 dark:hover:border-white transition-all uppercase" data-title="Download my résumé">RESUME_PDF</a>
         </nav>
 
         <button id="theme-toggle"
@@ -112,7 +110,6 @@ function buildNavHtml(filename, isArticlesSubdir) {
         <a href="/consulting"   class="${advisoryMobile}">Advisory</a>
         <a href="/labs"         class="${labsMobile}">Research_Labs</a>
         <a href="/articles"     class="${articlesMobile}">Articles</a>
-        <a href="/resume.pdf"        class="text-slate-900 dark:text-white uppercase">RESUME_PDF</a>
       </nav>
     </div>
   </header>`;

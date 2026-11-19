@@ -47,7 +47,6 @@ Status Indicators: Use font-mono and small "pulsing" green indicators to signify
 - `consulting.html` (Industrial Advisory): Single-track landing page for the Industrial Equipment Rental sector.
 - `labs.html` (Technical Research): Index of systems-level research projects.
 - `articles.html` (Whitepapers): Content rotation index — Blue/Green/Purple track posts following the 4-post cycle defined in content_strategy.md.
-- `resume.pdf` (The Profile): 1-page, high-density PDF optimized for ATS and executive review. Available via the nav and the hero CTA.
 
 **Case study detail pages (Blue track):**
 
