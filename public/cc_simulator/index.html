@@ -1,0 +1,2464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Combat Pacing & Crowd Control Simulator</title>
+    <style>
+        :root {
+            --bg-color: #121217;
+            --panel-bg: #1e1e24;
+            --panel-dark: #17171c;
+            --border-color: #2f2f3a;
+            --text-main: #f0f0f5;
+            --text-muted: #8e8ea0;
+            --accent-blue: #4ca6ff;
+            --accent-cyan: #00e5ff;
+            --accent-purple: #b84cff;
+            --accent-yellow: #ffd60a;
+            --accent-orange: #ff8800;
+            --accent-teal: #2ee59d;
+            --accent-gold: #f5c542;
+            --accent-heal: #38ef7d;
+            --accent-red: #ff4c4c;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            overflow-x: hidden;
+        }
+
+        .widget-container {
+            max-width: 960px;
+            margin: 0 auto;
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .header {
+            padding: 14px 20px;
+            background: var(--panel-dark);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-text h2 {
+            margin: 0;
+            font-size: 1.15rem;
+            font-weight: 600;
+        }
+
+        .header-text p {
+            margin: 3px 0 0 0;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .header-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .toggles-cluster {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .tactic-toggle-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #23232c;
+            padding: 7px 11px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            transition: opacity 0.2s;
+        }
+
+        .tactic-toggle-wrap.disabled {
+            opacity: 0.45;
+        }
+
+        .toggle-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            user-select: none;
+            transition: color 0.2s;
+        }
+
+        .toggle-label.active {
+            color: var(--text-main);
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider-toggle {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background-color: var(--accent-blue);
+            transition: 0.25s;
+            border-radius: 22px;
+        }
+
+        .slider-toggle.stun-track {
+            background-color: #3a3a48;
+        }
+
+        .slider-toggle:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: 0.25s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider-toggle {
+            background-color: var(--accent-cyan);
+        }
+
+        input:checked + .slider-toggle.stun-track {
+            background-color: var(--accent-yellow);
+        }
+
+        input:checked + .slider-toggle:before {
+            transform: translateX(18px);
+        }
+
+        .main-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            .main-content {
+                flex-direction: row;
+            }
+        }
+
+        .arena-wrapper {
+            flex: 1.65;
+            display: flex;
+            flex-direction: column;
+            border-bottom: 1px solid var(--border-color);
+            background: radial-gradient(circle at center, #22222a 0%, #15151a 100%);
+        }
+
+        @media (min-width: 768px) {
+            .arena-wrapper {
+                border-bottom: none;
+                border-right: 1px solid var(--border-color);
+            }
+        }
+
+        .arena-section {
+            position: relative;
+            width: 100%;
+            height: 365px;
+            overflow: hidden;
+        }
+
+        canvas#battleCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .legend-bar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 13px;
+            padding: 8px 14px;
+            background: rgba(18, 18, 23, 0.9);
+            border-top: 1px solid var(--border-color);
+            font-size: 0.72rem;
+            color: var(--text-muted);
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .swatch {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+        }
+
+        .swatch.tank-size {
+            width: 11px;
+            height: 11px;
+            background: var(--accent-red);
+        }
+
+        .swatch.caster-size {
+            width: 7px;
+            height: 7px;
+            background: var(--accent-red);
+        }
+
+        .swatch.purged-dot {
+            background: #ffffff;
+            border: 2px solid var(--accent-orange);
+            width: 11px;
+            height: 11px;
+        }
+
+        .swatch.curer-ring {
+            background: transparent;
+            border: 2px solid var(--accent-teal);
+            width: 11px;
+            height: 11px;
+        }
+
+        .swatch.rez-ring {
+            background: transparent;
+            border: 2px solid var(--accent-gold);
+            width: 11px;
+            height: 11px;
+        }
+
+        .swatch.hybrid-ring {
+            background: transparent;
+            border-top: 2px solid var(--accent-teal);
+            border-left: 2px solid var(--accent-teal);
+            border-bottom: 2px solid var(--accent-gold);
+            border-right: 2px solid var(--accent-gold);
+            width: 11px;
+            height: 11px;
+        }
+
+        .metrics-section {
+            flex: 1;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .metric-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .metric-label {
+            font-size: 0.73rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .metric-value {
+            font-size: 0.92rem;
+            font-weight: 500;
+            line-height: 1.35;
+        }
+
+        .scoreboard {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            padding-top: 10px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .score-box {
+            background: var(--panel-dark);
+            padding: 7px 9px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+        }
+
+        .score-num {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .controls-section {
+            padding: 16px 20px;
+            background: var(--panel-dark);
+            border-top: 1px solid var(--border-color);
+        }
+
+        .scenario-tabs {
+            display: flex;
+            gap: 8px;
+            padding: 10px 20px 0;
+            background: var(--panel-dark);
+            border-top: 1px solid var(--border-color);
+        }
+
+        @media (max-width: 760px) {
+            .header-actions { justify-content: flex-start; }
+        }
+
+        .scenario-tab {
+            background: #282832;
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            border-bottom: none;
+            border-radius: 6px 6px 0 0;
+            padding: 8px 12px;
+        }
+
+        .scenario-tab.active {
+            color: var(--text-main);
+            background: var(--panel-bg);
+            border-color: var(--accent-blue);
+        }
+
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 10px 16px;
+            margin-bottom: 14px;
+        }
+
+        .config-control {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 5px 10px;
+            align-items: center;
+        }
+
+        .config-control input[type="range"] { grid-column: 1 / -1; width: 100%; }
+        .config-value { color: var(--accent-cyan); font-family: ui-monospace, monospace; font-size: 0.8rem; }
+
+        .tower-note {
+            display: none;
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            margin: 0 0 12px;
+        }
+
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 12px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            accent-color: var(--accent-purple);
+            height: 6px;
+            background: #333;
+            border-radius: 3px;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: #fff;
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 0 6px rgba(0, 0, 0, 0.5);
+        }
+
+        .duration-display {
+            font-size: 1.35rem;
+            font-weight: 700;
+            min-width: 56px;
+            text-align: right;
+            color: var(--accent-purple);
+        }
+
+        .timeline-wrap {
+            margin-bottom: 22px;
+        }
+
+        .timeline-bar {
+            width: 100%;
+            height: 8px;
+            background: #2c2c36;
+            border-radius: 4px;
+            position: relative;
+        }
+
+        .timeline-fill {
+            height: 100%;
+            background: var(--accent-purple);
+            border-radius: 4px;
+            width: 0%;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            top: 11px;
+            font-size: 0.68rem;
+            color: var(--text-muted);
+            transform: translateX(-50%);
+            white-space: nowrap;
+            border-left: 1px solid #555;
+            padding-left: 4px;
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        button {
+            padding: 8px 13px;
+            border: none;
+            border-radius: 5px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: #0b111a;
+        }
+
+        .btn-primary:hover {
+            background: #6bb6ff;
+        }
+
+        .btn-preset {
+            background: #282832;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            font-size: 0.78rem;
+            padding: 8px 10px;
+        }
+
+        .btn-preset:hover {
+            background: #343442;
+        }
+
+        .btn-danger {
+            background: var(--accent-red);
+            color: #fff;
+            display: none;
+        }
+
+        .btn-danger:hover {
+            background: #ff6666;
+        }
+
+        .log-box {
+            margin-top: 12px;
+            padding: 9px 12px;
+            background: #101014;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            font-size: 0.79rem;
+            line-height: 1.45;
+            color: #b0b0c0;
+            height: 96px;
+            overflow-y: auto;
+        }
+
+        .log-line { margin-bottom: 2px; }
+        .log-warn { color: var(--accent-orange); }
+        .log-crit { color: var(--accent-red); font-weight: 600; }
+        .log-good { color: var(--accent-teal); }
+        .log-info { color: var(--accent-cyan); }
+        .log-rez { color: var(--accent-gold); }
+    </style>
+</head>
+<body>
+
+<div class="widget-container">
+    <div class="header">
+        <div class="header-text">
+            <h2>In this simulator, we can crudely demonstrate how inferior numbers can successfully take pot shots at, or dominate significantly larger numbers through the use of long-duration crowd-control.</h2>
+            <p>Class HP variance (Tanks &gt; Healers &gt; Casters), PBAoE cast interruption, &ge;4–5s Mez sync, Purge, Demez &amp; Rez.</p>
+        </div>
+
+        <div class="header-actions">
+            <button class="btn-primary" id="btn-ambush">Execute Ambush</button>
+            <div class="toggles-cluster">
+                <div class="tactic-toggle-wrap">
+                    <span class="toggle-label active" id="lbl-assist">Assist Train</span>
+                    <label class="switch" title="Toggle PBAoE Bombing Group">
+                        <input type="checkbox" id="toggle-bomb">
+                        <span class="slider-toggle"></span>
+                    </label>
+                    <span class="toggle-label" id="lbl-bomb">AoE Bomb</span>
+                </div>
+
+                <div class="tactic-toggle-wrap disabled" id="stun-toggle-wrap">
+                    <span class="toggle-label" id="lbl-stun">Coordinated AoE Stun (2s Cast)</span>
+                    <label class="switch" title="Cast 2.0s AoE Stun at center mass synced with pre-cast PBAoE">
+                        <input type="checkbox" id="toggle-stun" disabled>
+                        <span class="slider-toggle stun-track"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="arena-wrapper">
+            <div class="arena-section" id="arenaSection">
+                <canvas id="battleCanvas"></canvas>
+            </div>
+            <div class="legend-bar">
+                <div class="legend-item"><span class="swatch" style="background: var(--accent-blue);"></span> 8-Man</div>
+                <div class="legend-item"><span class="swatch tank-size"></span> Tank (High HP)</div>
+                <div class="legend-item"><span class="swatch caster-size"></span> Caster (Low HP)</div>
+                <div class="legend-item"><span class="swatch" style="background: var(--accent-purple);"></span> Mezzed</div>
+                <div class="legend-item"><span class="swatch" style="background: var(--accent-yellow);"></span> Stunned</div>
+                <div class="legend-item"><span class="swatch purged-dot"></span> Purged</div>
+                <div class="legend-item"><span class="swatch curer-ring"></span> Cure Mez</div>
+                <div class="legend-item"><span class="swatch rez-ring"></span> Healer/Rez</div>
+                <div class="legend-item"><span class="swatch hybrid-ring"></span> Hybrid</div>
+            </div>
+        </div>
+
+        <div class="metrics-section">
+            <div class="metric-group">
+                <span class="metric-label">Force Multiplication (8vZerg)</span>
+                <span class="metric-value" id="val-force">High (Tactical Equalizer)</span>
+            </div>
+            <div class="metric-group">
+                <span class="metric-label">HP Variance &amp; Attrition</span>
+                <span class="metric-value" id="val-tactic">Purgers &rarr; Free Cure Mez &rarr; Free Healers</span>
+            </div>
+            <div class="metric-group">
+                <span class="metric-label">Primary Skill Expression</span>
+                <span class="metric-value" id="val-skill">State Management, Triage &amp; Positioning</span>
+            </div>
+            <div class="metric-group">
+                <span class="metric-label">Interruption &amp; Counterplay</span>
+                <span class="metric-value" id="val-discipline">Both sides Heal, Rez, Demez &amp; Purge</span>
+            </div>
+
+            <div class="scoreboard">
+                <div class="score-box">
+                    <div class="metric-label">8-Man</div>
+                    <div class="score-num" id="score-squad" style="color: var(--accent-blue);">8 / 8</div>
+                </div>
+                <div class="score-box">
+                    <div class="metric-label">Zerg</div>
+                    <div class="score-num" id="score-zerg" style="color: var(--accent-red);">40 / 40</div>
+                </div>
+                <div class="score-box">
+                    <div class="metric-label">Rezzes (8M/Z)</div>
+                    <div class="score-num" id="score-rezzes" style="color: var(--accent-gold);">0 / 0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="scenario-tabs" role="tablist" aria-label="Simulation scenarios">
+        <button class="scenario-tab active" id="tab-ambush" role="tab" aria-selected="true">Open-field ambush</button>
+        <button class="scenario-tab" id="tab-tower" role="tab" aria-selected="false">Tower wrapping</button>
+    </div>
+
+    <div class="controls-section">
+        <div class="config-grid">
+            <label class="config-control">
+                <span class="metric-label">Zerg size</span><span class="config-value" id="zerg-size-display">40</span>
+                <input type="range" id="zerg-size-slider" min="8" max="80" step="1" value="40" aria-label="Zerg size">
+            </label>
+            <label class="config-control">
+                <span class="metric-label">Player purge countermeasures</span><span class="config-value" id="player-purge-display">Immediate ≤5s</span>
+                <input type="range" id="player-purge-slider" min="0" max="3" step="1" value="3" aria-label="Player purge countermeasures">
+            </label>
+            <label class="config-control">
+                <span class="metric-label">Zerg purge countermeasures</span><span class="config-value" id="zerg-purge-display">No purge</span>
+                <input type="range" id="zerg-purge-slider" min="0" max="3" step="1" value="0" aria-label="Zerg purge countermeasures">
+            </label>
+            <div class="config-control">
+                <span class="metric-label">Resurrection</span><span class="config-value">both sides</span>
+                <div class="toggles-cluster">
+                    <label class="toggle-label active"><input type="checkbox" id="player-rez-toggle" checked> 8-Man</label>
+                    <label class="toggle-label active"><input type="checkbox" id="zerg-rez-toggle" checked> Zerg</label>
+                </div>
+            </div>
+        </div>
+        <p class="tower-note" id="tower-note">Lesser numbers route around square towers; targets behind walls require line-of-sight. When a tower is fully wrapped, the zerg pull toward the next tower.</p>
+        <div class="slider-container">
+            <span class="metric-label">CC DURATION:</span>
+            <input type="range" id="cc-slider" min="1" max="60" step="0.5" value="30">
+            <span class="duration-display" id="cc-display">30s</span>
+        </div>
+
+        <div class="timeline-wrap">
+            <div class="timeline-bar">
+                <div class="timeline-fill" id="timelineFill"></div>
+                <div class="timeline-marker" style="left: 5.5%;">Center (1.6s)</div>
+                <div class="timeline-marker" style="left: 12.5%;">Stun+Bomb Sync (3.6s)</div>
+                <div class="timeline-marker" style="left: 20%;">Min Viable Mez (5s+)</div>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn-preset" id="preset-short">2s Micro-CC (Fails Setup)</button>
+            <button class="btn-preset" id="preset-min">4.5s Min Viable Mez</button>
+            <button class="btn-preset" id="preset-long">35s DAoC Mez</button>
+            <button class="btn-danger" id="btn-cleave">Simulate Stray AoE (Break Mez!)</button>
+        </div>
+
+        <div class="log-box" id="log-box">
+            <div class="log-line">Ready. Toggle AoE Bomb + Coordinated AoE Stun, then test 2s vs. 4.5s vs. 35s CC.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const canvas = document.getElementById('battleCanvas');
+    const ctx = canvas.getContext('2d');
+    const arenaSection = document.getElementById('arenaSection');
+
+    const slider = document.getElementById('cc-slider');
+    const display = document.getElementById('cc-display');
+    const toggleBomb = document.getElementById('toggle-bomb');
+    const toggleStun = document.getElementById('toggle-stun');
+    const stunToggleWrap = document.getElementById('stun-toggle-wrap');
+    const lblAssist = document.getElementById('lbl-assist');
+    const lblBomb = document.getElementById('lbl-bomb');
+    const lblStun = document.getElementById('lbl-stun');
+
+    const btnAmbush = document.getElementById('btn-ambush');
+    const btnPresetShort = document.getElementById('preset-short');
+    const btnPresetMin = document.getElementById('preset-min');
+    const btnPresetLong = document.getElementById('preset-long');
+    const btnCleave = document.getElementById('btn-cleave');
+    const logBox = document.getElementById('log-box');
+    const timelineFill = document.getElementById('timelineFill');
+    const zergSizeSlider = document.getElementById('zerg-size-slider');
+    const playerPurgeSlider = document.getElementById('player-purge-slider');
+    const zergPurgeSlider = document.getElementById('zerg-purge-slider');
+    const playerRezToggle = document.getElementById('player-rez-toggle');
+    const zergRezToggle = document.getElementById('zerg-rez-toggle');
+    const zergSizeDisplay = document.getElementById('zerg-size-display');
+    const playerPurgeDisplay = document.getElementById('player-purge-display');
+    const zergPurgeDisplay = document.getElementById('zerg-purge-display');
+    const tabAmbush = document.getElementById('tab-ambush');
+    const tabTower = document.getElementById('tab-tower');
+    const towerNote = document.getElementById('tower-note');
+
+    const valForce = document.getElementById('val-force');
+    const valTactic = document.getElementById('val-tactic');
+    const valSkill = document.getElementById('val-skill');
+    const valDiscipline = document.getElementById('val-discipline');
+    const scoreSquadEl = document.getElementById('score-squad');
+    const scoreZergEl = document.getElementById('score-zerg');
+    const scoreRezzesEl = document.getElementById('score-rezzes');
+
+    let width = 560;
+    let height = 365;
+    let dpr = window.devicePixelRatio || 1;
+
+    let currentDuration = 30;
+    let isAoEBomb = false;
+    let useBombStun = false;
+    let scenario = 'ambush';
+    let zergSize = 40;
+    let playerPurgeMode = 3;
+    let zergPurgeMode = 3;
+    let playerResurrection = true;
+    let zergResurrection = true;
+    let towerIndex = 0;
+    let towers = [];
+
+    const PURGE_LABELS = ['No purge', 'Poor >10s', 'Conservative 5–10s', 'Immediate ≤5s'];
+    const PURGE_DELAYS = [Infinity, 10.5, 5, 0.35];
+    const getPurgeDelay = (mode) => mode === 3 ? 0.35 + Math.random() * 0.65 : PURGE_DELAYS[mode];
+    const lineOfSight = (x1, y1, x2, y2) => {
+        if (scenario !== 'tower') return true;
+        return !towers.some(t => segmentIntersectsRect(x1, y1, x2, y2, t.x, t.y, t.size));
+    };
+    function segmentIntersectsRect(x1, y1, x2, y2, rx, ry, size) {
+        const minX = rx - size / 2, maxX = rx + size / 2, minY = ry - size / 2, maxY = ry + size / 2;
+        let t0 = 0, t1 = 1, dx = x2 - x1, dy = y2 - y1;
+        for (const [p, q] of [[-dx, x1 - minX], [dx, maxX - x1], [-dy, y1 - minY], [dy, maxY - y1]]) {
+            if (p === 0) { if (q < 0) return false; continue; }
+            const r = q / p;
+            if (p < 0) { if (r > t1) return false; if (r > t0) t0 = r; }
+            else { if (r < t0) return false; if (r < t1) t1 = r; }
+        }
+        return t0 <= t1;
+    }
+
+    let isTowerWrapping = false;
+    function towerWaypoint(unit, tower) {
+        const half = tower.size / 2 + 18;
+        const side = unit.id % 4;
+        return side === 0 ? { x: tower.x - half, y: tower.y - half } :
+            side === 1 ? { x: tower.x + half, y: tower.y - half } :
+            side === 2 ? { x: tower.x + half, y: tower.y + half } :
+            { x: tower.x - half, y: tower.y + half };
+    }
+
+    function pointInsideTower(x, y, tower) {
+        const half = tower.size / 2;
+        return x > tower.x - half && x < tower.x + half && y > tower.y - half && y < tower.y + half;
+    }
+
+    function keepUnitOutsideTowers(unit) {
+        if (scenario !== 'tower' || towers.length === 0) return;
+        const radius = unit.archetype === 'tank' ? 7 : unit.archetype === 'healer' ? 6 : 5;
+        for (const tower of towers) {
+            if (!pointInsideTower(unit.x, unit.y, tower)) continue;
+            const half = tower.size / 2;
+            const left = Math.abs(unit.x - (tower.x - half));
+            const right = Math.abs((tower.x + half) - unit.x);
+            const top = Math.abs(unit.y - (tower.y - half));
+            const bottom = Math.abs((tower.y + half) - unit.y);
+            const nearest = Math.min(left, right, top, bottom);
+            if (nearest === left) unit.x = tower.x - half - radius;
+            else if (nearest === right) unit.x = tower.x + half + radius;
+            else if (nearest === top) unit.y = tower.y - half - radius;
+            else unit.y = tower.y + half + radius;
+            unit.x = Math.max(10, Math.min(width - 10, unit.x));
+            unit.y = Math.max(10, Math.min(height - 10, unit.y));
+        }
+    }
+
+    let simState = 'idle'; // 'idle' | 'fighting' | 'ended'
+    let simTime = 0;
+    let lastTimestamp = 0;
+    let zergRezCount = 0;
+    let squadRezCount = 0;
+
+    // Choreographed Bomb Setup Timings (measured from Ambush Mez landing at t = 0.25s)
+    const AMBUSH_MEZ_TIME = 0.25;
+    const CENTER_ARRIVAL_DURATION = 1.60; // 1.6s to drop off hill & reach center mass
+    const STUN_CAST_DURATION = 2.00;      // 2.0s cast time for AoE Stun
+    const PRE_BOMB_LEAD_TIME = 1.00;      // Bombers start pre-casting 1.0s before stun lands
+
+    let squad = [];
+    let zerg = [];
+    let projectiles = [];
+    let healBeams = [];
+    let slashes = [];
+    let shockwaves = [];
+    let currentTarget = null;
+    let purgeQueue = [];
+
+    let ccLanded = false;
+    let ccExpired = false;
+    let reachedCenter = false;
+    let stunCastStarted = false;
+    let stunCastProgress = 0;
+    let stunCastInterrupted = false;
+    let bombStunApplied = false;
+    let preBombStarted = false;
+    let preBombProgress = 0;
+    let bombInitialBurstDone = false;
+    let bombPulseTimer = 0;
+    let allBombersStalledLogged = false;
+
+    function clampCircleRadius(x, y, desiredRadius) {
+        const margin = 5;
+        const maxAllowed = Math.min(
+            x - margin,
+            width - margin - x,
+            y - margin,
+            height - margin - y
+        );
+        return Math.max(6, Math.min(desiredRadius, maxAllowed));
+    }
+
+    function addShockwave(x, y, startRadius, desiredMaxRadius, color, lineWidth = 2.5) {
+        const safeMax = clampCircleRadius(x, y, desiredMaxRadius);
+        shockwaves.push({
+            x,
+            y,
+            radius: Math.min(startRadius, safeMax * 0.4),
+            maxRadius: safeMax,
+            alpha: 1,
+            color,
+            lineWidth
+        });
+    }
+
+    function addHealBeam(x1, y1, x2, y2) {
+        healBeams.push({
+            x1,
+            y1,
+            x2,
+            y2,
+            alpha: 0.95
+        });
+    }
+
+    function addSlash(x, y, angle, color = '#ff5252') {
+        slashes.push({
+            x,
+            y,
+            angle,
+            alpha: 1,
+            radius: 10,
+            color
+        });
+    }
+
+    function applyDamageToSquadMember(squadMember, amount) {
+        if (!squadMember || !squadMember.alive) return;
+        squadMember.hp -= amount;
+        squadMember.hitFlash = 0.14;
+
+        // If the AoE Stunner is still mid-cast on the 2.0s stun and takes hit(s) when mez breaks, stun cast is interrupted
+        if (isAoEBomb && useBombStun && stunCastStarted && !bombStunApplied && !stunCastInterrupted && squadMember.id === 1) {
+            squadMember.stunCastHits = (squadMember.stunCastHits || 0) + 1;
+            if (squadMember.stunCastHits >= 1 && ccExpired) {
+                stunCastInterrupted = true;
+                log(`CRITICAL: Opening CC expired before 2.0s AoE Stun finished! Stunner INTERRUPTED!`, 'crit');
+            }
+        }
+
+        // Taking damage interrupts PBAoE casters!
+        if (squadMember.isBomber) {
+            squadMember.interruptTimer = 2.6;
+            if (isAoEBomb && !squadMember.wasInterruptedLogged) {
+                squadMember.wasInterruptedLogged = true;
+                log(`PBAoE Caster #${squadMember.id} INTERRUPTED by incoming damage!`, 'warn');
+            }
+            const remainingActiveBombers = squad.filter(s => s.alive && s.isBomber && s.ccState === 'none' && s.interruptTimer <= 0).length;
+            if (isAoEBomb && remainingActiveBombers === 0 && !allBombersStalledLogged) {
+                allBombersStalledLogged = true;
+                log(`ALL PBAoE CASTERS INTERRUPTED! Bomb train halted—cannot cast under fire!`, 'crit');
+            }
+        }
+
+        if (squadMember.hp <= 0) {
+            squadMember.hp = 0;
+            squadMember.alive = false;
+            squadMember.ccState = 'none';
+            squadMember.stunRemaining = 0;
+            addShockwave(squadMember.x, squadMember.y, 2, 16, '#ff4c4c', 1.8);
+            log(`8-Man #${squadMember.id} (${squadMember.archetype.toUpperCase()}) dropped!`, 'crit');
+        }
+    }
+
+    function resizeCanvas() {
+        const rect = arenaSection.getBoundingClientRect();
+        width = rect.width || 560;
+        height = rect.height || 365;
+        dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        if (simState === 'idle') {
+            initEntities();
+        }
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
+    function log(msg, cls = '') {
+        const div = document.createElement('div');
+        div.className = `log-line ${cls}`;
+        const ts = simState === 'idle' ? '0.0s' : `${simTime.toFixed(1)}s`;
+        div.textContent = `[${ts}] ${msg}`;
+        logBox.appendChild(div);
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    function formatDur(val) {
+        return Number.isInteger(val) ? `${val}s` : `${val.toFixed(1)}s`;
+    }
+
+    function updateMetrics() {
+        currentDuration = parseFloat(slider.value);
+        zergSize = parseInt(zergSizeSlider.value, 10);
+        playerPurgeMode = parseInt(playerPurgeSlider.value, 10);
+        zergPurgeMode = parseInt(zergPurgeSlider.value, 10);
+        playerResurrection = playerRezToggle.checked;
+        zergResurrection = zergRezToggle.checked;
+        zergSizeDisplay.textContent = zergSize;
+        playerPurgeDisplay.textContent = PURGE_LABELS[playerPurgeMode];
+        zergPurgeDisplay.textContent = PURGE_LABELS[zergPurgeMode];
+        isAoEBomb = toggleBomb.checked;
+        toggleStun.disabled = !isAoEBomb;
+        stunToggleWrap.classList.toggle('disabled', !isAoEBomb);
+        if (!isAoEBomb) {
+            toggleStun.checked = false;
+        }
+        useBombStun = isAoEBomb && toggleStun.checked;
+
+        display.textContent = formatDur(currentDuration);
+        if (scenario === 'tower') {
+            valForce.textContent = 'Line-of-sight puzzle (wrap, pull, repeat)';
+            valSkill.textContent = 'Corner control, spacing & target discipline';
+            valDiscipline.textContent = 'Walls block attacks until a corner is bypassed';
+        }
+        lblAssist.classList.toggle('active', !isAoEBomb);
+        lblBomb.classList.toggle('active', isAoEBomb);
+        lblStun.classList.toggle('active', useBombStun);
+
+        if (isAoEBomb) {
+            valTactic.textContent = useBombStun
+                ? 'Casters drop first -> Healers -> High-HP Tanks survive stun'
+                : 'No Bomb Stun: 1st PBAoE breaks Mez -> Casters Interrupted!';
+            valTactic.style.color = useBombStun ? 'var(--accent-yellow)' : 'var(--accent-orange)';
+        } else {
+            valTactic.textContent = 'Purgers -> Free Cure Mez -> Free Healers -> Tanks';
+            valTactic.style.color = 'var(--accent-blue)';
+        }
+
+        if (currentDuration < 4.0) {
+            display.style.color = 'var(--accent-yellow)';
+            valForce.textContent = isAoEBomb
+                ? 'Fails Setup (CC ends before 3.6s Stun+Bomb sync!)'
+                : 'Impossible (Zerg Healers & Numbers Win)';
+            valForce.style.color = 'var(--accent-red)';
+            valSkill.textContent = 'Twitch Reflexes / Filler Rotation APM';
+            valDiscipline.textContent = isAoEBomb
+                ? 'Mez breaks mid-cast -> Stunner & Bombers interrupted!'
+                : 'Low (Short stun expires before support triage matters)';
+        } else if (currentDuration < 18) {
+            display.style.color = '#a377ff';
+            valForce.textContent = isAoEBomb
+                ? (useBombStun ? 'Partial Wipe (Squishies drop; Tanks survive)' : 'Stalled (No Stun to cover Mez break)')
+                : 'Moderate (Pickoffs possible)';
+            valForce.style.color = '#a377ff';
+            valSkill.textContent = 'Tight Cast Sync & Support Triage';
+            valDiscipline.textContent = isAoEBomb
+                ? 'Surviving Tanks wake up & interrupt bombers -> Brawl'
+                : 'High (Focus squishy Healers/Curers over Tanks)';
+        } else {
+            display.style.color = 'var(--accent-purple)';
+            valForce.textContent = 'High (Tactical Equalizer vs. Numbers)';
+            valForce.style.color = 'var(--accent-purple)';
+            valSkill.textContent = 'State Management, Triage & Positioning';
+            valDiscipline.textContent = isAoEBomb
+                ? (useBombStun
+                    ? 'Peels Casters -> Healers -> High-HP Tanks (Scrappy finish)'
+                    : 'Stalled Bomb (1st wave wakes pack -> bombers interrupted!)')
+                : 'Critical (Hard-swap Purging Curers; burn free Healers)';
+        }
+        if (scenario === 'tower') {
+            valForce.textContent = 'Line-of-sight puzzle (wrap, pull, repeat)';
+            valSkill.textContent = 'Corner control, spacing & target discipline';
+            valDiscipline.textContent = 'Walls block attacks until a corner is bypassed';
+        }
+    }
+
+    function initEntities() {
+        squad = [];
+        zerg = [];
+        projectiles = [];
+        healBeams = [];
+        slashes = [];
+        shockwaves = [];
+        currentTarget = null;
+        purgeQueue = [];
+
+        ccLanded = false;
+        ccExpired = false;
+        reachedCenter = false;
+        stunCastStarted = false;
+        stunCastProgress = 0;
+        stunCastInterrupted = false;
+        bombStunApplied = false;
+        preBombStarted = false;
+        preBombProgress = 0;
+        bombInitialBurstDone = false;
+        bombPulseTimer = 0;
+        allBombersStalledLogged = false;
+        zergRezCount = 0;
+        squadRezCount = 0;
+        towerIndex = 0;
+        towers = scenario === 'tower'
+            ? [{ x: width * 0.38, y: height * 0.50, size: Math.min(94, height * 0.24) },
+               { x: width * 0.80, y: height * 0.50, size: Math.min(82, height * 0.22) }]
+            : [];
+
+        const cx = scenario === 'tower' ? width * 0.78 : width * 0.56;
+        const cy = height * 0.52;
+        const maxClusterR = Math.min(88, Math.min(width, height) * 0.25);
+
+        const pureRezRate = 0.12 + Math.random() * 0.05;
+
+        for (let i = 0; i < zergSize; i++) {
+            const angle = (i * 2.39996) + (Math.random() * 0.25);
+            const r = Math.sqrt(i / zergSize) * maxClusterR;
+
+            const roleRoll = Math.random();
+            let isCurer = false;
+            let isRezzer = false;
+            if (roleRoll < 0.10) {
+                isCurer = true;
+            } else if (roleRoll < 0.13) {
+                isCurer = true;
+                isRezzer = true;
+            } else if (roleRoll < 0.13 + pureRezRate) {
+                isRezzer = true;
+            }
+
+            // Class Archetype & HP Variability:
+            // - Supports (Cure Mez / Healers): Mid HP (100 - 115)
+            // - Non-support combat players: ~52% Tanks (High HP: 155 - 190), ~48% Casters (Low HP: 60 - 76)
+            let archetype = 'tank';
+            let maxHp = 165;
+            if (isCurer || isRezzer) {
+                archetype = 'healer';
+                maxHp = Math.round(100 + Math.random() * 15);
+            } else if (Math.random() < 0.48) {
+                archetype = 'caster';
+                maxHp = Math.round(60 + Math.random() * 16);
+            } else {
+                archetype = 'tank';
+                maxHp = Math.round(155 + Math.random() * 35);
+            }
+
+            const hasPurge = zergPurgeMode > 0 && Math.random() < (zergPurgeMode === 3 ? 0.28 : 0.18);
+            let purgeBucket = 'none';
+            let mezPurgeDelay = Infinity;
+            if (hasPurge) {
+                mezPurgeDelay = getPurgeDelay(zergPurgeMode);
+                purgeBucket = zergPurgeMode === 3 ? 'fast' : (zergPurgeMode === 2 ? 'medium' : 'late');
+            }
+
+            zerg.push({
+                id: i + 1,
+                archetype,
+                x: Math.max(12, Math.min(width - 12, cx + Math.cos(angle) * r)),
+                y: Math.max(12, Math.min(height - 12, cy + Math.sin(angle) * r)),
+                hp: maxHp,
+                maxHp,
+                alive: true,
+                ccState: 'none',
+                stunRemaining: 0,
+                ccImmuneTimer: 0,
+                isCurer,
+                isRezzer,
+                hasPurge,
+                purgeBucket,
+                mezPurgeDelay,
+                bombStunPurgeDelay: null,
+                purged: false,
+                demezCastProgress: 0,
+                rezCastProgress: 0,
+                rezTarget: null,
+                healCooldown: 0.4 + Math.random() * 0.5,
+                counterCcCooldown: 2.0 + Math.random() * 3.0,
+                ambushReactionDelay: 1.5,
+                attackCooldown: 0.15 + Math.random() * 0.45
+            });
+        }
+
+        // Coordinated 8-Man Roster with Class HP Variability:
+        // #1: Primary Cure Mezzer + AoE Stunner (Mid HP: 135)
+        // #2 & #3: Primary Healer / Rezzers (Mid HP: 125)
+        // #4: Hybrid Cure Mez + Healer/Rezzer (Mid HP: 125)
+        // #5 - #8: 4 Glass-Cannon PBAoE / DPS Casters (Low HP: 90)
+        for (let i = 0; i < 8; i++) {
+            const isCurer = (i === 0 || i === 3);
+            const isRezzer = (i === 1 || i === 2 || i === 3);
+            const isBomber = (i >= 4);
+            const hasPurge = playerPurgeMode > 0 && i < 7;
+
+            let archetype = 'caster';
+            let maxHp = 90;
+            if (isCurer || isRezzer) {
+                archetype = 'healer';
+                maxHp = (i === 0) ? 135 : 125;
+            }
+
+            squad.push({
+                id: i + 1,
+                archetype,
+                x: 32 + (i % 4) * 15,
+                y: 34 + Math.floor(i / 4) * 15,
+                hp: maxHp,
+                maxHp,
+                alive: true,
+                ccState: 'none',
+                stunRemaining: 0,
+                ccImmuneTimer: 0,
+                isCurer,
+                isRezzer,
+                isBomber,
+                hasPurge,
+                purged: false,
+                purgeReactionDelay: getPurgeDelay(playerPurgeMode),
+                purgeReactionTimer: 0,
+                demezCastProgress: 0,
+                rezCastProgress: 0,
+                rezTarget: null,
+                healCooldown: 0.25 + (i * 0.12),
+                hitFlash: 0,
+                stunCastHits: 0,
+                interruptTimer: 0,
+                wasInterruptedLogged: false,
+                fireCooldown: (i * 0.04)
+            });
+        }
+
+        [...zerg, ...squad].forEach(keepUnitOutsideTowers);
+
+        updateScoreboard();
+        timelineFill.style.width = '0%';
+        btnCleave.style.display = 'none';
+    }
+
+    function updateScoreboard() {
+        const aliveSquad = squad.filter(s => s.alive).length;
+        const aliveZerg = zerg.filter(z => z.alive).length;
+        scoreSquadEl.textContent = `${aliveSquad} / 8`;
+        scoreZergEl.textContent = `${aliveZerg} / ${zergSize}`;
+        scoreRezzesEl.textContent = `${squadRezCount} / ${zergRezCount}`;
+    }
+
+    function startSimulation() {
+        initEntities();
+        logBox.innerHTML = '';
+        simTime = 0;
+        simState = 'fighting';
+        updateMetrics();
+
+        const modeDesc = scenario === 'tower'
+            ? 'Tower Wrapping'
+            : (isAoEBomb
+                ? (useBombStun ? 'AoE Bomb + 2.0s Center AoE Stun' : 'AoE Bomb Dive (No Stun)')
+                : 'Assist Train');
+        log(`Ambush initiated (${modeDesc}) | Opening CC: ${formatDur(currentDuration)}`, 'info');
+    }
+
+    function triggerZergPurge(enemy, reasonLabel) {
+        if (!enemy.alive || enemy.purged) return;
+        enemy.purged = true;
+        enemy.ccState = 'none';
+        enemy.stunRemaining = 0;
+        enemy.ccImmuneTimer = 15;
+
+        addShockwave(enemy.x, enemy.y, 3, 22, '#ff8800', 2.5);
+
+        const roleTag = enemy.isCurer && enemy.isRezzer
+            ? ' [HYBRID CURER/HEALER]'
+            : (enemy.isCurer ? ' [MEZ CURER]' : (enemy.isRezzer ? ' [HEALER/REZ]' : ` [${enemy.archetype.toUpperCase()}]`));
+
+        if (!isAoEBomb) {
+            if (enemy.isCurer) {
+                if (currentTarget && currentTarget.alive && currentTarget.isCurer && currentTarget.ccState === 'none') {
+                    log(`PURGE (${reasonLabel}) by Zerg #${enemy.id}${roleTag}! Already on Curer—queued next.`, 'warn');
+                    if (!purgeQueue.includes(enemy)) purgeQueue.unshift(enemy);
+                } else {
+                    log(`HARD SWAP! Zerg #${enemy.id}${roleTag} PURGED (${reasonLabel})! Dropping current target!`, 'crit');
+                    if (currentTarget && currentTarget.alive && currentTarget.ccState === 'none' && !purgeQueue.includes(currentTarget)) {
+                        purgeQueue.unshift(currentTarget);
+                    }
+                    currentTarget = enemy;
+                }
+            } else {
+                log(`Zerg #${enemy.id}${roleTag} popped PURGE (${reasonLabel})! Queued after current target.`, 'warn');
+                if (!purgeQueue.includes(enemy)) purgeQueue.push(enemy);
+            }
+        } else {
+            log(`Zerg #${enemy.id}${roleTag} popped PURGE (${reasonLabel}) inside bomb zone!`, 'warn');
+        }
+    }
+
+    function triggerSquadPurge(member) {
+        if (!member.alive || member.purged) return;
+        member.purged = true;
+        member.ccState = 'none';
+        member.stunRemaining = 0;
+        member.ccImmuneTimer = 15;
+        member.purgeReactionTimer = 0;
+
+        addShockwave(member.x, member.y, 3, 20, '#ff8800', 2.2);
+        log(`8-Man #${member.id} popped PURGE to break enemy CC!`, 'info');
+    }
+
+    function triggerAmbushCC() {
+        ccLanded = true;
+        const cx = width * 0.56;
+        const cy = height * 0.52;
+        const mezRadius = clampCircleRadius(cx, cy, Math.min(78, Math.min(width, height) * 0.22));
+        const isLongMez = currentDuration > 5;
+
+        projectiles.push({
+            faction: 'squad',
+            x: 46,
+            y: 46,
+            tx: cx,
+            ty: cy,
+            target: null,
+            progress: 0.75,
+            damage: 0
+        });
+        addShockwave(cx, cy, 5, mezRadius + 6, isLongMez ? '#b84cff' : '#ffd60a', 3);
+
+        let ccCount = 0;
+        let outCount = 0;
+        let purgeHolders = 0;
+
+        zerg.forEach(enemy => {
+            const dist = Math.hypot(enemy.x - cx, enemy.y - cy);
+            if (dist <= mezRadius) {
+                enemy.ccState = isLongMez ? 'mezzed' : 'stunned';
+                if (!isLongMez) {
+                    enemy.stunRemaining = currentDuration;
+                }
+                ccCount++;
+                if (enemy.hasPurge) purgeHolders++;
+            } else {
+                enemy.ccState = 'none';
+                outCount++;
+            }
+        });
+
+        log(`Step 1: Ambush ${isLongMez ? 'Mez' : 'Stun'} landed on ${ccCount}/${zergSize} (${outCount} stragglers outside). Bombers closing to center!`, 'info');
+        if (purgeHolders > 0 && isLongMez) {
+            log(`Intel: ${purgeHolders} mezzed target${purgeHolders === 1 ? ' has' : 's have'} Purge available.`, 'warn');
+        }
+
+        if (isLongMez && !isAoEBomb) {
+            btnCleave.style.display = 'inline-block';
+        }
+    }
+
+    function selectNextTarget() {
+        const aliveEnemies = zerg.filter(z => z.alive);
+        if (aliveEnemies.length === 0) return null;
+
+        // 1. Queued Purgers (prioritizing Mez Curers, then Healers, then low-HP Casters, then Tanks)
+        purgeQueue = purgeQueue.filter(z => z.alive && z.ccState === 'none');
+        if (purgeQueue.length > 0) {
+            const curerInQueue = purgeQueue.find(z => z.isCurer);
+            if (curerInQueue) {
+                purgeQueue = purgeQueue.filter(z => z !== curerInQueue);
+                return curerInQueue;
+            }
+            const healerInQueue = purgeQueue.find(z => z.isRezzer);
+            if (healerInQueue) {
+                purgeQueue = purgeQueue.filter(z => z !== healerInQueue);
+                return healerInQueue;
+            }
+            purgeQueue.sort((a, b) => a.hp - b.hp);
+            return purgeQueue.shift();
+        }
+
+        // 2. Free (un-CC'd) Cure Mezzers
+        const activeCurers = aliveEnemies.filter(z => z.ccState === 'none' && z.isCurer);
+        if (activeCurers.length > 0) return activeCurers[0];
+
+        // 3. If no Cure Mezzer is free, prioritize free Healers / Rezzers
+        const activeHealers = aliveEnemies.filter(z => z.ccState === 'none' && z.isRezzer);
+        if (activeHealers.length > 0) return activeHealers[0];
+
+        // 4. Other active un-CC'd stragglers (focus squishy Casters before high-HP Tanks)
+        const activeStragglers = aliveEnemies.filter(z => z.ccState === 'none');
+        if (activeStragglers.length > 0) {
+            activeStragglers.sort((a, b) => a.hp - b.hp);
+            return activeStragglers[0];
+        }
+
+        // 5. Peel edge-most CC'd target cleanly
+        const cx = width * 0.56;
+        const cy = height * 0.52;
+        aliveEnemies.sort((a, b) => Math.hypot(b.x - cx, b.y - cy) - Math.hypot(a.x - cx, a.y - cy));
+        return aliveEnemies[0];
+    }
+
+    function breakAllMez(reason) {
+        let woken = 0;
+        zerg.forEach(z => {
+            if (z.alive && z.ccState === 'mezzed') {
+                z.ccState = 'none';
+                woken++;
+            }
+        });
+        btnCleave.style.display = 'none';
+        if (woken > 0) {
+            log(`${reason} (${woken} enemies woke up!)`, 'crit');
+        }
+    }
+
+    function updateSimulation(dt) {
+        if (simState === 'idle' || simState === 'ended') return;
+
+        simTime += dt;
+
+        squad.forEach(s => {
+            if (s.hitFlash > 0) s.hitFlash = Math.max(0, s.hitFlash - dt);
+            if (s.interruptTimer > 0) {
+                s.interruptTimer = Math.max(0, s.interruptTimer - dt);
+                if (s.interruptTimer === 0) {
+                    s.wasInterruptedLogged = false;
+                }
+            }
+        });
+
+        // Step 1: Fire Ambush Mez at t = 0.25s while squad starts running down the hill
+        if (!ccLanded && simTime >= AMBUSH_MEZ_TIME) {
+            triggerAmbushCC();
+        }
+
+        const ccElapsed = Math.max(0, simTime - AMBUSH_MEZ_TIME);
+        const maxTimelineScale = 30;
+
+        // Track opening CC expiry
+        if (ccLanded && !ccExpired) {
+            const pct = Math.min((ccElapsed / maxTimelineScale) * 100, 100);
+            timelineFill.style.width = `${pct}%`;
+
+            if (ccElapsed >= currentDuration) {
+                ccExpired = true;
+                timelineFill.style.width = '0%';
+                btnCleave.style.display = 'none';
+                let wokeCount = 0;
+                zerg.forEach(z => {
+                    if (z.alive && z.ccState === 'mezzed') {
+                        z.ccState = 'none';
+                        wokeCount++;
+                    }
+                });
+                if (wokeCount > 0) {
+                    log(`Opening CC expired (${formatDur(currentDuration)})! ${wokeCount} center-mass enemies wake up!`, 'warn');
+                }
+            }
+        }
+
+        // Update individual stun timers & CC immunity on both sides
+        [...zerg, ...squad].forEach(unit => {
+            if (unit.ccImmuneTimer > 0) {
+                unit.ccImmuneTimer = Math.max(0, unit.ccImmuneTimer - dt);
+            }
+            if (unit.alive && unit.ccState === 'stunned') {
+                unit.stunRemaining -= dt;
+                if (unit.stunRemaining <= 0) {
+                    unit.stunRemaining = 0;
+                    unit.ccState = 'none';
+                }
+            }
+        });
+
+        // Zerg Purge Logic
+        if (ccLanded) {
+            zerg.forEach(enemy => {
+                if (!enemy.alive || !enemy.hasPurge || enemy.purged) return;
+
+                if (enemy.ccState === 'mezzed' && ccElapsed >= enemy.mezPurgeDelay) {
+                    const label = enemy.purgeBucket === 'fast'
+                        ? '≤1s reflex'
+                        : (enemy.purgeBucket === 'medium' ? '≤5s' : 'mid-combat');
+                    triggerZergPurge(enemy, label);
+                } else if (enemy.ccState === 'stunned' && enemy.bombStunPurgeDelay !== null) {
+                    enemy.bombStunPurgeDelay -= dt;
+                    if (enemy.bombStunPurgeDelay <= 0) {
+                        triggerZergPurge(enemy, 'escaped bomb stun');
+                    }
+                }
+            });
+        }
+
+        // 8-Man Purge Logic
+        squad.forEach(member => {
+            if (!member.alive || member.ccState === 'none') {
+                member.purgeReactionTimer = 0;
+                return;
+            }
+            if (member.hasPurge && !member.purged) {
+                member.purgeReactionTimer += dt;
+                if (member.purgeReactionTimer >= member.purgeReactionDelay) {
+                    triggerSquadPurge(member);
+                }
+            }
+        });
+
+        // Active Zerg Cure Mezzers casting Demez
+        zerg.forEach(curer => {
+            if (!curer.alive || curer.ccState !== 'none' || !curer.isCurer) {
+                curer.demezCastProgress = 0;
+                return;
+            }
+            const mezzedAllies = zerg.filter(z => z.alive && z.ccState === 'mezzed');
+            if (mezzedAllies.length === 0) {
+                curer.demezCastProgress = 0;
+                return;
+            }
+
+            curer.demezCastProgress += dt;
+            if (curer.demezCastProgress >= 2.0) {
+                curer.demezCastProgress = 0;
+                mezzedAllies.sort((a, b) => Math.hypot(a.x - curer.x, a.y - curer.y) - Math.hypot(b.x - curer.x, b.y - curer.y));
+                const woken = mezzedAllies.slice(0, 5);
+                woken.forEach(w => w.ccState = 'none');
+
+                addShockwave(curer.x, curer.y, 4, 52, '#2ee59d', 2);
+                log(`Zerg Curer #${curer.id} cast DEMEZ! Woke up ${woken.length} allies!`, 'crit');
+            }
+        });
+
+        // Active 8-Man Cure Mezzers casting Demez
+        squad.forEach(curer => {
+            if (!curer.alive || curer.ccState !== 'none' || !curer.isCurer) {
+                curer.demezCastProgress = 0;
+                return;
+            }
+            const mezzedMates = squad.filter(s => s.alive && s.ccState === 'mezzed');
+            if (mezzedMates.length === 0) {
+                curer.demezCastProgress = 0;
+                return;
+            }
+
+            curer.demezCastProgress += dt;
+            if (curer.demezCastProgress >= 1.35) {
+                curer.demezCastProgress = 0;
+                mezzedMates.forEach(m => m.ccState = 'none');
+                addShockwave(curer.x, curer.y, 4, 48, '#2ee59d', 2.2);
+                log(`8-Man Curer #${curer.id} cast DEMEZ! Freed ${mezzedMates.length} teammate${mezzedMates.length === 1 ? '' : 's'}!`, 'good');
+            }
+        });
+
+        // Active Zerg Healer/Rezzers
+        zerg.forEach(healer => {
+            if (!healer.alive || healer.ccState !== 'none' || !healer.isRezzer) {
+                healer.rezCastProgress = 0;
+                healer.rezTarget = null;
+                return;
+            }
+            if (healer.isCurer && zerg.some(z => z.alive && z.ccState === 'mezzed')) {
+                healer.rezCastProgress = 0;
+                healer.rezTarget = null;
+                return;
+            }
+
+            healer.healCooldown = Math.max(0, healer.healCooldown - dt);
+
+            const criticalAllies = zerg.filter(z => z.alive && z.hp < z.maxHp * 0.55 && Math.hypot(z.x - healer.x, z.y - healer.y) <= 85);
+            if (criticalAllies.length > 0 && healer.healCooldown <= 0) {
+                criticalAllies.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+                const patient = criticalAllies[0];
+                patient.hp = Math.min(patient.maxHp, patient.hp + 20);
+                healer.healCooldown = 1.05;
+                addHealBeam(healer.x, healer.y, patient.x, patient.y);
+                return;
+            }
+
+            if (zergResurrection && (!healer.rezTarget || healer.rezTarget.alive)) {
+                const deadAllies = zerg.filter(z => !z.alive);
+                if (deadAllies.length > 0) {
+                    deadAllies.sort((a, b) => Math.hypot(a.x - healer.x, a.y - healer.y) - Math.hypot(b.x - healer.x, b.y - healer.y));
+                    healer.rezTarget = deadAllies[0];
+                    healer.rezCastProgress = 0;
+                } else {
+                    healer.rezTarget = null;
+                    healer.rezCastProgress = 0;
+                }
+            }
+
+            if (healer.rezTarget && !healer.rezTarget.alive) {
+                const distToCorpse = Math.hypot(healer.rezTarget.x - healer.x, healer.rezTarget.y - healer.y);
+                if (distToCorpse > 52) {
+                    const speed = 56;
+                    healer.x += ((healer.rezTarget.x - healer.x) / distToCorpse) * speed * dt;
+                    healer.y += ((healer.rezTarget.y - healer.y) / distToCorpse) * speed * dt;
+                } else {
+                    healer.rezCastProgress += dt;
+                    if (healer.rezCastProgress >= 2.2) {
+                        const revived = healer.rezTarget;
+                        revived.alive = true;
+                        revived.hp = revived.maxHp * 0.65;
+                        revived.ccState = 'none';
+                        revived.purged = false;
+                        healer.rezCastProgress = 0;
+                        healer.rezTarget = null;
+                        zergRezCount++;
+
+                        addShockwave(revived.x, revived.y, 3, 28, '#f5c542', 2.5);
+                        log(`Zerg Healer #${healer.id} rezzed Zerg #${revived.id} (${revived.archetype})!`, 'rez');
+                    }
+                }
+                return;
+            }
+
+            const injuredAllies = zerg.filter(z => z.alive && z.hp < z.maxHp * 0.92 && Math.hypot(z.x - healer.x, z.y - healer.y) <= 85);
+            if (injuredAllies.length > 0 && healer.healCooldown <= 0) {
+                injuredAllies.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+                const patient = injuredAllies[0];
+                patient.hp = Math.min(patient.maxHp, patient.hp + 16);
+                healer.healCooldown = 1.15;
+                addHealBeam(healer.x, healer.y, patient.x, patient.y);
+            }
+        });
+
+        // Active 8-Man Healer/Rezzers
+        squad.forEach(healer => {
+            if (!healer.alive || healer.ccState !== 'none' || !healer.isRezzer) {
+                healer.rezCastProgress = 0;
+                healer.rezTarget = null;
+                return;
+            }
+            if (healer.isCurer && squad.some(s => s.alive && s.ccState === 'mezzed')) {
+                healer.rezCastProgress = 0;
+                healer.rezTarget = null;
+                return;
+            }
+
+            healer.healCooldown = Math.max(0, healer.healCooldown - dt);
+
+            const criticalMates = squad.filter(s => s.alive && s.hp < s.maxHp * 0.60);
+            if (criticalMates.length > 0 && healer.healCooldown <= 0) {
+                criticalMates.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+                const patient = criticalMates[0];
+                patient.hp = Math.min(patient.maxHp, patient.hp + 26);
+                healer.healCooldown = 0.85;
+                addHealBeam(healer.x, healer.y, patient.x, patient.y);
+                return;
+            }
+
+            if (playerResurrection && (!healer.rezTarget || healer.rezTarget.alive)) {
+                const deadMates = squad.filter(s => !s.alive);
+                if (deadMates.length > 0) {
+                    deadMates.sort((a, b) => Math.hypot(a.x - healer.x, a.y - healer.y) - Math.hypot(b.x - healer.x, b.y - healer.y));
+                    healer.rezTarget = deadMates[0];
+                    healer.rezCastProgress = 0;
+                } else {
+                    healer.rezTarget = null;
+                    healer.rezCastProgress = 0;
+                }
+            }
+
+            if (healer.rezTarget && !healer.rezTarget.alive) {
+                const distToCorpse = Math.hypot(healer.rezTarget.x - healer.x, healer.rezTarget.y - healer.y);
+                if (distToCorpse > 65) {
+                    const speed = 72;
+                    healer.x += ((healer.rezTarget.x - healer.x) / distToCorpse) * speed * dt;
+                    healer.y += ((healer.rezTarget.y - healer.y) / distToCorpse) * speed * dt;
+                } else {
+                    healer.rezCastProgress += dt;
+                    if (healer.rezCastProgress >= 1.85) {
+                        const revived = healer.rezTarget;
+                        revived.alive = true;
+                        revived.hp = revived.maxHp * 0.75;
+                        revived.ccState = 'none';
+                        revived.purged = false;
+                        revived.interruptTimer = 0;
+                        healer.rezCastProgress = 0;
+                        healer.rezTarget = null;
+                        squadRezCount++;
+
+                        addShockwave(revived.x, revived.y, 3, 26, '#f5c542', 2.5);
+                        log(`8-Man Healer #${healer.id} combat-rezzed 8-Man #${revived.id}!`, 'rez');
+                    }
+                }
+                return;
+            }
+
+            const injuredMates = squad.filter(s => s.alive && s.hp < s.maxHp * 0.92);
+            if (injuredMates.length > 0 && healer.healCooldown <= 0) {
+                injuredMates.sort((a, b) => (a.hp / a.maxHp) - (b.hp / b.maxHp));
+                const patient = injuredMates[0];
+                patient.hp = Math.min(patient.maxHp, patient.hp + 20);
+                healer.healCooldown = 0.95;
+                addHealBeam(healer.x, healer.y, patient.x, patient.y);
+            }
+        });
+
+        // Squad Behavior: AoE Bomb Choreography vs. Single-Target Assist Train
+        const aliveSquad = squad.filter(s => s.alive);
+        const freeSquad = aliveSquad.filter(s => s.ccState === 'none');
+        const aliveZerg = zerg.filter(z => z.alive);
+
+        if (isAoEBomb) {
+            const cx = width * 0.56;
+            const cy = height * 0.52;
+            const bombRadius = clampCircleRadius(cx, cy, Math.min(82, Math.min(width, height) * 0.23));
+
+            // Tuned so Casters (60-76 HP) drop in 1-2 waves, Healers (100-115 HP) in 3-4 waves,
+            // and Tanks (155-190 HP) survive the 3.8s stun window to create a dynamic endgame brawl!
+            const maxOpeningKills = 2;
+            const openingHitDamage = 25;
+            const followUpWaveDamage = 21;
+            const pulseInterval = 0.52;
+
+            // Step 2: Run down the hill toward center mass (0.0s -> 1.6s after Ambush Mez)
+            const moveLerp = reachedCenter ? 6.0 : 3.2;
+            freeSquad.forEach((s, idx) => {
+                if (s.isRezzer && s.rezTarget && !s.rezTarget.alive) return;
+                const angle = (idx / Math.max(1, freeSquad.length)) * Math.PI * 2 + (reachedCenter ? simTime * 1.4 : Math.PI);
+                const orbit = reachedCenter ? 20 : 18;
+                const tx = cx + Math.cos(angle) * orbit;
+                const ty = cy + Math.sin(angle) * orbit;
+                s.x += (tx - s.x) * Math.min(1, dt * moveLerp);
+                s.y += (ty - s.y) * Math.min(1, dt * moveLerp);
+            });
+
+            if (ccLanded && !reachedCenter && ccElapsed >= CENTER_ARRIVAL_DURATION) {
+                reachedCenter = true;
+                if (useBombStun) {
+                    stunCastStarted = true;
+                    log(`Step 2: Bombers reached center mass (${ccElapsed.toFixed(1)}s). Casting 2.0s AoE Stun...`, 'info');
+                } else {
+                    log(`Step 2: Bombers reached center mass (${ccElapsed.toFixed(1)}s). Preparing PBAoE...`, 'info');
+                }
+            }
+
+            // Step 3: 2.0s AoE Stun Cast (from 1.6s to 3.6s after Ambush Mez)
+            if (reachedCenter && useBombStun && stunCastStarted && !bombStunApplied && !stunCastInterrupted) {
+                stunCastProgress += dt;
+                if (stunCastProgress >= STUN_CAST_DURATION) {
+                    bombStunApplied = true;
+                    addShockwave(cx, cy, 6, bombRadius, '#ffd60a', 3.5);
+                    let stunnedCount = 0;
+                    aliveZerg.forEach(enemy => {
+                        const d = Math.hypot(enemy.x - cx, enemy.y - cy);
+                        if (d <= bombRadius && enemy.ccImmuneTimer <= 0) {
+                            enemy.ccState = 'stunned';
+                            enemy.stunRemaining = 3.8;
+                            stunnedCount++;
+                            if (enemy.hasPurge && !enemy.purged) {
+                                enemy.bombStunPurgeDelay = Math.max(0.25, getPurgeDelay(zergPurgeMode));
+                            }
+                        }
+                    });
+                    log(`Step 3 & 4: 2.0s AoE Stun landed on ${stunnedCount} targets in unison with pre-cast PBAoE!`, 'info');
+                }
+            }
+
+            // Step 4: Bombers start pre-casting ~1.0s before the AoE Stun lands (at ccElapsed = 2.6s)
+            const preBombStartThreshold = CENTER_ARRIVAL_DURATION + (STUN_CAST_DURATION - PRE_BOMB_LEAD_TIME);
+            if (reachedCenter && !preBombStarted && ccElapsed >= preBombStartThreshold) {
+                preBombStarted = true;
+                const activeBombers = aliveSquad.filter(s => s.isBomber && s.ccState === 'none' && s.interruptTimer <= 0);
+                if (activeBombers.length > 0 && (!useBombStun || !stunCastInterrupted)) {
+                    log(`Step 4: ${activeBombers.length}/4 Bombers pre-casting PBAoE (-1.0s before stun lands)...`, 'info');
+                }
+            }
+
+            const activeBombers = aliveSquad.filter(s => s.isBomber && s.ccState === 'none' && s.interruptTimer <= 0);
+
+            if (preBombStarted && !bombInitialBurstDone) {
+                if (activeBombers.length > 0) {
+                    preBombProgress += dt;
+                } else {
+                    preBombProgress = 0;
+                }
+
+                const unisonReady = useBombStun
+                    ? (bombStunApplied || stunCastInterrupted) && preBombProgress >= PRE_BOMB_LEAD_TIME
+                    : preBombProgress >= PRE_BOMB_LEAD_TIME;
+
+                if (unisonReady && activeBombers.length > 0) {
+                    bombInitialBurstDone = true;
+                    bombPulseTimer = 0;
+
+                    const casterRatio = activeBombers.length / 4;
+
+                    for (let r = 0; r < 2; r++) {
+                        addShockwave(
+                            cx + (Math.random() - 0.5) * 18,
+                            cy + (Math.random() - 0.5) * 18,
+                            8 + r * 10,
+                            bombRadius,
+                            r === 0 ? '#00e5ff' : '#b84cff',
+                            3
+                        );
+                    }
+
+                    const inBombZone = aliveZerg.filter(e => Math.hypot(e.x - cx, e.y - cy) <= bombRadius);
+                    // Squishy Casters near center drop first on the opening spike
+                    inBombZone.sort((a, b) => (a.hp + Math.hypot(a.x - cx, a.y - cy) * 0.4) - (b.hp + Math.hypot(b.x - cx, b.y - cy) * 0.4));
+
+                    const scaledKills = Math.max(1, Math.round((1 + Math.floor(Math.random() * maxOpeningKills)) * casterRatio));
+                    const guaranteedKills = Math.min(inBombZone.length, scaledKills);
+                    for (let k = 0; k < guaranteedKills; k++) {
+                        inBombZone[k].hp = 0;
+                        inBombZone[k].alive = false;
+                    }
+
+                    for (let k = guaranteedKills; k < inBombZone.length; k++) {
+                        const enemy = inBombZone[k];
+                        if (enemy.ccState === 'mezzed') {
+                            enemy.ccState = 'none';
+                        }
+                        const jitter = 0.85 + Math.random() * 0.30;
+                        enemy.hp -= openingHitDamage * casterRatio * jitter;
+                        if (enemy.hp <= 0 && enemy.alive) {
+                            enemy.alive = false;
+                        }
+                    }
+
+                    const totalDropped = inBombZone.filter(e => !e.alive).length;
+                    log(`Unison PBAoE (${activeBombers.length}/4 casters) dropped ${totalDropped} squishy target${totalDropped === 1 ? '' : 's'}!`, 'good');
+                }
+            } else if (bombInitialBurstDone && activeBombers.length > 0) {
+                bombPulseTimer += dt;
+                if (bombPulseTimer >= pulseInterval) {
+                    bombPulseTimer = 0;
+                    const casterRatio = activeBombers.length / 4;
+
+                    for (let r = 0; r < 2; r++) {
+                        addShockwave(
+                            cx + (Math.random() - 0.5) * 20,
+                            cy + (Math.random() - 0.5) * 20,
+                            8 + r * 10,
+                            bombRadius,
+                            r === 0 ? '#00e5ff' : '#b84cff',
+                            2.8
+                        );
+                    }
+
+                    let killedCasters = 0;
+                    let killedHealers = 0;
+                    let killedTanks = 0;
+                    const baseWaveDamage = followUpWaveDamage * casterRatio;
+
+                    aliveZerg.forEach(enemy => {
+                        const d = Math.hypot(enemy.x - cx, enemy.y - cy);
+                        if (d <= bombRadius) {
+                            if (enemy.ccState === 'mezzed') {
+                                enemy.ccState = 'none';
+                            }
+                            const jitter = 0.85 + Math.random() * 0.30;
+                            enemy.hp -= baseWaveDamage * jitter;
+                            if (enemy.hp <= 0 && enemy.alive) {
+                                enemy.alive = false;
+                                if (enemy.archetype === 'caster') killedCasters++;
+                                else if (enemy.archetype === 'healer') killedHealers++;
+                                else killedTanks++;
+                            }
+                        }
+                    });
+
+                    const totalKilled = killedCasters + killedHealers + killedTanks;
+                    if (totalKilled > 0) {
+                        const breakdown = [];
+                        if (killedCasters) breakdown.push(`${killedCasters} Caster${killedCasters > 1 ? 's' : ''}`);
+                        if (killedHealers) breakdown.push(`${killedHealers} Support${killedHealers > 1 ? 's' : ''}`);
+                        if (killedTanks) breakdown.push(`${killedTanks} Tank${killedTanks > 1 ? 's' : ''}`);
+                        log(`PBAoE wave (${activeBombers.length}/4) killed ${breakdown.join(', ')}!`, 'good');
+                    }
+                }
+            }
+        } else {
+            // Single-Target Assist Train
+            const nextBest = selectNextTarget();
+            if (!currentTarget || !currentTarget.alive || (nextBest && nextBest !== currentTarget && nextBest.ccState === 'none' && (
+                (nextBest.isCurer && !currentTarget.isCurer) ||
+                (!zerg.some(z => z.alive && z.ccState === 'none' && z.isCurer) && nextBest.isRezzer && !currentTarget.isRezzer)
+            ))) {
+                currentTarget = nextBest;
+                if (currentTarget) {
+                    const tags = [currentTarget.archetype.toUpperCase()];
+                    if (currentTarget.purged) tags.push('PURGED');
+                    if (currentTarget.isCurer) tags.push('CURER');
+                    if (currentTarget.isRezzer) tags.push('HEALER/REZ');
+                    log(`Assist train focusing Zerg #${currentTarget.id} [${tags.join('/')}] (${Math.round(currentTarget.hp)} HP)`);
+                }
+            }
+
+            if (currentTarget && currentTarget.alive) {
+                freeSquad.forEach((s, idx) => {
+                    if (s.isRezzer && s.rezTarget && !s.rezTarget.alive) return;
+
+                    const angle = (idx / Math.max(1, freeSquad.length)) * Math.PI * 2;
+                    const orbitDist = (s.isCurer || s.isRezzer) ? 44 : 32;
+                    const tx = Math.max(12, Math.min(width - 12, currentTarget.x + Math.cos(angle) * orbitDist));
+                    const ty = Math.max(12, Math.min(height - 12, currentTarget.y + Math.sin(angle) * orbitDist));
+                    s.x += (tx - s.x) * Math.min(1, dt * 6.8);
+                    s.y += (ty - s.y) * Math.min(1, dt * 6.8);
+                    keepUnitOutsideTowers(s);
+
+                    const distToTarget = Math.hypot(s.x - currentTarget.x, s.y - currentTarget.y);
+                    if (distToTarget <= 62) {
+                        s.fireCooldown -= dt;
+                        if (s.fireCooldown <= 0) {
+                            s.fireCooldown = 0.24;
+                            projectiles.push({
+                                faction: 'squad',
+                                x: s.x,
+                                y: s.y,
+                                tx: currentTarget.x,
+                                ty: currentTarget.y,
+                                target: currentTarget,
+                                progress: 0,
+                                damage: (s.isCurer || s.isRezzer) ? 2.6 : 4.5
+                            });
+                        }
+                    }
+                });
+            }
+        }
+
+        // Active (un-CC'd) Zerg Swarm, Counter-CC & Animated Counter-Attack Logic
+        const activeEnemies = zerg.filter(z => z.alive && z.ccState === 'none');
+        if (activeEnemies.length > 0 && aliveSquad.length > 0 && ccLanded) {
+            activeEnemies.forEach(enemy => {
+                if (!ccExpired && !enemy.purged && ccElapsed < enemy.ambushReactionDelay) {
+                    return;
+                }
+
+                if (enemy.isRezzer && enemy.rezTarget && !enemy.rezTarget.alive) {
+                    return;
+                }
+
+                // Prioritize hitting stunner/bombers to interrupt, or squishy casters
+                let targetPool = aliveSquad;
+                if (isAoEBomb) {
+                    if (stunCastStarted && !bombStunApplied && !stunCastInterrupted && squad[0] && squad[0].alive) {
+                        targetPool = [squad[0]];
+                    } else {
+                        const aliveBombers = aliveSquad.filter(s => s.isBomber);
+                        if (aliveBombers.length > 0) {
+                            targetPool = aliveBombers;
+                        }
+                    }
+                }
+
+                let nearest = targetPool[0];
+                let minD = Math.hypot(nearest.x - enemy.x, nearest.y - enemy.y);
+                for (let s of targetPool) {
+                    const d = Math.hypot(s.x - enemy.x, s.y - enemy.y);
+                    if (d < minD) {
+                        minD = d;
+                        nearest = s;
+                    }
+                }
+
+                if (!enemy.isCurer && !enemy.isRezzer && minD <= 54) {
+                    enemy.counterCcCooldown -= dt;
+                    if (enemy.counterCcCooldown <= 0) {
+                        enemy.counterCcCooldown = 7.5 + Math.random() * 5.0;
+                        const ccCandidates = aliveSquad.filter(s => s.ccState === 'none' && s.ccImmuneTimer <= 0 && Math.hypot(s.x - enemy.x, s.y - enemy.y) <= 55);
+                        if (ccCandidates.length > 0 && Math.random() < 0.28) {
+                            const victim = ccCandidates[Math.floor(Math.random() * ccCandidates.length)];
+                            victim.ccState = 'mezzed';
+                            addShockwave(victim.x, victim.y, 2, 18, '#b84cff', 2);
+                            log(`Zerg controller mezzed 8-Man #${victim.id}!`, 'warn');
+                        }
+                    }
+                }
+
+                if (minD > 16) {
+                    const speed = 64;
+                    const waypoint = scenario === 'tower' ? towerWaypoint(enemy, towers[towerIndex]) : nearest;
+                    const waypointD = Math.hypot(waypoint.x - enemy.x, waypoint.y - enemy.y);
+                    if (scenario === 'tower' && waypointD < 18 && towerIndex < towers.length - 1) {
+                        towerIndex++;
+                        log(`Tower fully wrapped. Zerg pulls toward Tower ${towerIndex + 1}.`, 'info');
+                    }
+                    const moveD = Math.max(0.01, Math.hypot(waypoint.x - enemy.x, waypoint.y - enemy.y));
+                    enemy.x = Math.max(10, Math.min(width - 10, enemy.x + ((waypoint.x - enemy.x) / moveD) * speed * dt));
+                    enemy.y = Math.max(10, Math.min(height - 10, enemy.y + ((waypoint.y - enemy.y) / moveD) * speed * dt));
+                    keepUnitOutsideTowers(enemy);
+                }
+
+                enemy.attackCooldown -= dt;
+                if (enemy.attackCooldown <= 0) {
+                    if (minD <= 20 && lineOfSight(enemy.x, enemy.y, nearest.x, nearest.y)) {
+                        enemy.attackCooldown = 0.50;
+                        const hitAngle = Math.atan2(nearest.y - enemy.y, nearest.x - enemy.x);
+                        addSlash(nearest.x, nearest.y, hitAngle, '#ff4c4c');
+                        applyDamageToSquadMember(nearest, 13.5);
+                    } else if (minD <= 48 && lineOfSight(enemy.x, enemy.y, nearest.x, nearest.y)) {
+                        enemy.attackCooldown = 0.64;
+                        projectiles.push({
+                            faction: 'zerg',
+                            x: enemy.x,
+                            y: enemy.y,
+                            tx: nearest.x,
+                            ty: nearest.y,
+                            target: nearest,
+                            progress: 0,
+                            damage: 11.0
+                        });
+                    }
+                }
+            });
+        }
+
+        // Update Projectiles
+        for (let i = projectiles.length - 1; i >= 0; i--) {
+            const p = projectiles[i];
+            if (p.target && p.target.alive) {
+                p.tx = p.target.x;
+                p.ty = p.target.y;
+            }
+            p.progress += dt * (p.faction === 'squad' ? 9.5 : 7.8);
+            if (p.progress >= 1) {
+                if (p.target && p.target.alive) {
+                    if (p.faction === 'squad') {
+                        if (p.target.ccState === 'mezzed' && lineOfSight(p.x, p.y, p.tx, p.ty)) {
+                            p.target.ccState = 'none';
+                        }
+                        if (lineOfSight(p.x, p.y, p.tx, p.ty)) p.target.hp -= p.damage;
+                        if (p.target.hp <= 0) {
+                            p.target.hp = 0;
+                            p.target.alive = false;
+                            const roleNote = p.target.isCurer && p.target.isRezzer
+                                ? ' (Hybrid support down!)'
+                                : (p.target.isCurer ? ' (Mez Curer down!)' : (p.target.isRezzer ? ' (Healer/Rez down!)' : ` (${p.target.archetype} down!)`));
+                            log(`Zerg #${p.target.id} killed${roleNote}`, 'good');
+                        }
+                    } else if (lineOfSight(p.x, p.y, p.tx, p.ty)) {
+                        const hitAngle = Math.atan2(p.ty - p.y, p.tx - p.x);
+                        addSlash(p.tx, p.ty, hitAngle, '#ff9f43');
+                        applyDamageToSquadMember(p.target, p.damage);
+                    }
+                }
+                projectiles.splice(i, 1);
+            }
+        }
+
+        // Update Heal Beams
+        for (let i = healBeams.length - 1; i >= 0; i--) {
+            healBeams[i].alpha -= dt * 3.2;
+            if (healBeams[i].alpha <= 0) {
+                healBeams.splice(i, 1);
+            }
+        }
+
+        // Update Melee / Impact Slashes
+        for (let i = slashes.length - 1; i >= 0; i--) {
+            const sl = slashes[i];
+            sl.alpha -= dt * 5.2;
+            sl.radius += dt * 16;
+            if (sl.alpha <= 0) {
+                slashes.splice(i, 1);
+            }
+        }
+
+        // Update Shockwaves
+        for (let i = shockwaves.length - 1; i >= 0; i--) {
+            const sw = shockwaves[i];
+            sw.radius = Math.min(sw.maxRadius, sw.radius + (sw.maxRadius - sw.radius) * Math.min(1, dt * 8) + 42 * dt);
+            sw.alpha -= dt * 1.85;
+            if (sw.alpha <= 0) {
+                shockwaves.splice(i, 1);
+            }
+        }
+
+        updateScoreboard();
+
+        // End Conditions
+        const remSquad = squad.filter(s => s.alive).length;
+        const remZerg = zerg.filter(z => z.alive).length;
+
+        if (remZerg === 0) {
+            simState = 'ended';
+            timelineFill.style.width = '0%';
+            btnCleave.style.display = 'none';
+            log(`VICTORY: 8-man wiped all ${zergSize} enemies in ${simTime.toFixed(1)}s! (Rezzes 8M/Z: ${squadRezCount}/${zergRezCount})`, 'good');
+        } else if (remSquad === 0) {
+            simState = 'ended';
+            timelineFill.style.width = '0%';
+            btnCleave.style.display = 'none';
+            const killedCount = zergSize - remZerg + zergRezCount;
+            const remTanks = zerg.filter(z => z.alive && z.archetype === 'tank').length;
+            log(`DEFEAT: 8-man wiped after ${killedCount} kill${killedCount === 1 ? '' : 's'} (${remZerg} zerg left, ${remTanks} Tanks standing).`, 'crit');
+        }
+    }
+
+    function drawRoleRing(x, y, unit, baseR) {
+        const ringR = baseR + 2.2;
+        if (unit.purged) {
+            ctx.strokeStyle = '#ff8800';
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.arc(x, y, ringR, 0, Math.PI * 2);
+            ctx.stroke();
+        } else if (unit.isCurer && unit.isRezzer) {
+            ctx.lineWidth = 1.8;
+            ctx.strokeStyle = '#2ee59d';
+            ctx.beginPath();
+            ctx.arc(x, y, ringR, Math.PI * 0.5, Math.PI * 1.5);
+            ctx.stroke();
+
+            ctx.strokeStyle = '#f5c542';
+            ctx.beginPath();
+            ctx.arc(x, y, ringR, -Math.PI * 0.5, Math.PI * 0.5);
+            ctx.stroke();
+        } else if (unit.isCurer) {
+            ctx.strokeStyle = '#2ee59d';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.arc(x, y, ringR, 0, Math.PI * 2);
+            ctx.stroke();
+        } else if (unit.isRezzer) {
+            ctx.strokeStyle = '#f5c542';
+            ctx.lineWidth = 1.6;
+            ctx.beginPath();
+            ctx.arc(x, y, ringR, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+    }
+
+    function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(0, 0, width, height);
+        ctx.clip();
+
+        // Subtle tactical grid
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+        ctx.lineWidth = 1;
+        const gridSize = 40;
+        for (let x = 0; x < width; x += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(x, 0);
+            ctx.lineTo(x, height);
+            ctx.stroke();
+        }
+        for (let y = 0; y < height; y += gridSize) {
+            ctx.beginPath();
+            ctx.moveTo(0, y);
+            ctx.lineTo(width, y);
+            ctx.stroke();
+        }
+
+        if (scenario === 'tower') {
+            towers.forEach((tower, index) => {
+                ctx.fillStyle = index === towerIndex ? 'rgba(255, 214, 10, 0.16)' : 'rgba(142, 142, 160, 0.12)';
+                ctx.strokeStyle = index === towerIndex ? '#ffd60a' : '#8e8ea0';
+                ctx.lineWidth = 2;
+                ctx.fillRect(tower.x - tower.size / 2, tower.y - tower.size / 2, tower.size, tower.size);
+                ctx.strokeRect(tower.x - tower.size / 2, tower.y - tower.size / 2, tower.size, tower.size);
+                ctx.fillStyle = '#b0b0c0';
+                ctx.font = '700 10px ui-monospace, monospace';
+                ctx.fillText(`TOWER ${index + 1}`, tower.x - 25, tower.y);
+            });
+        }
+
+        // Hill marker in top-left
+        const hillRadius = clampCircleRadius(46, 46, 42);
+        ctx.fillStyle = 'rgba(76, 166, 255, 0.07)';
+        ctx.beginPath();
+        ctx.arc(46, 46, hillRadius, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.fillStyle = 'rgba(142, 142, 160, 0.5)';
+        ctx.font = '600 10px sans-serif';
+        ctx.fillText('AMBUSH HILL', 14, 16);
+
+        // Live AoE Bomb Choreography Status Pill in top-right
+        if (isAoEBomb && simState === 'fighting') {
+            const activeBombers = squad.filter(s => s.alive && s.isBomber && s.ccState === 'none' && s.interruptTimer <= 0).length;
+            const aliveBombers = squad.filter(s => s.alive && s.isBomber).length;
+
+            let statusText = '1. CLOSING TO CENTER...';
+            let borderColor = '#b84cff';
+            let bgColor = 'rgba(184, 76, 255, 0.16)';
+            let textColor = '#d896ff';
+
+            if (!reachedCenter) {
+                statusText = `1. RUN-IN (${Math.max(0, CENTER_ARRIVAL_DURATION - Math.max(0, simTime - AMBUSH_MEZ_TIME)).toFixed(1)}s)`;
+            } else if (useBombStun && stunCastInterrupted && !bombStunApplied) {
+                statusText = 'STUN CAST INTERRUPTED!';
+                borderColor = '#ff4c4c';
+                bgColor = 'rgba(255, 76, 76, 0.2)';
+                textColor = '#ff6b6b';
+            } else if (useBombStun && stunCastStarted && !bombStunApplied) {
+                const remStun = Math.max(0, STUN_CAST_DURATION - stunCastProgress).toFixed(1);
+                statusText = preBombStarted
+                    ? `STUN (${remStun}s) + PRE-CAST!`
+                    : `2. CASTING STUN (${remStun}s)`;
+                borderColor = '#ffd60a';
+                bgColor = 'rgba(255, 214, 10, 0.16)';
+                textColor = '#ffd60a';
+            } else if (!bombInitialBurstDone) {
+                const remPre = Math.max(0, PRE_BOMB_LEAD_TIME - preBombProgress).toFixed(1);
+                statusText = `PRE-CASTING BOMB (${remPre}s)`;
+                borderColor = '#00e5ff';
+                bgColor = 'rgba(0, 229, 255, 0.16)';
+                textColor = '#00e5ff';
+            } else if (activeBombers === 0) {
+                statusText = 'PBAoE: INTERRUPTED (0/4)';
+                borderColor = '#ff4c4c';
+                bgColor = 'rgba(255, 76, 76, 0.2)';
+                textColor = '#ff6b6b';
+            } else {
+                statusText = `PBAoE: ${activeBombers}/${aliveBombers} CASTING`;
+                borderColor = '#00e5ff';
+                bgColor = 'rgba(0, 229, 255, 0.14)';
+                textColor = '#00e5ff';
+            }
+
+            const badgeW = 192;
+            const badgeH = 22;
+            const badgeX = width - badgeW - 10;
+            const badgeY = 10;
+            ctx.fillStyle = bgColor;
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.roundRect(badgeX, badgeY, badgeW, badgeH, 4);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = textColor;
+            ctx.font = '700 10px ui-monospace, SFMono-Regular, Menlo, monospace';
+            ctx.fillText(statusText, badgeX + 9, badgeY + 14);
+        }
+
+        // Draw Shockwaves
+        shockwaves.forEach(sw => {
+            const safeR = clampCircleRadius(sw.x, sw.y, sw.radius);
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, sw.alpha);
+            ctx.strokeStyle = sw.color;
+            ctx.lineWidth = sw.lineWidth;
+            ctx.beginPath();
+            ctx.arc(sw.x, sw.y, safeR, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+        });
+
+        // Draw Healing Beams
+        healBeams.forEach(hb => {
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, hb.alpha);
+            ctx.strokeStyle = '#38ef7d';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(hb.x1, hb.y1);
+            ctx.lineTo(hb.x2, hb.y2);
+            ctx.stroke();
+
+            ctx.fillStyle = '#38ef7d';
+            ctx.beginPath();
+            ctx.arc(hb.x2, hb.y2, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+
+        // Draw Zerg Dots (radius scales with Tank > Healer > Caster)
+        zerg.forEach(z => {
+            ctx.save();
+            const dotR = z.archetype === 'tank' ? 5.8 : (z.archetype === 'healer' ? 4.8 : 3.9);
+
+            if (!z.alive) {
+                ctx.fillStyle = '#2d2d36';
+                ctx.beginPath();
+                ctx.arc(z.x, z.y, dotR * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                return;
+            }
+
+            if (!isAoEBomb && currentTarget === z && simState === 'fighting') {
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.arc(z.x, z.y, dotR + 5.2, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            if (z.isCurer && z.ccState === 'none' && z.demezCastProgress > 0) {
+                ctx.strokeStyle = '#2ee59d';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const startA = -Math.PI / 2;
+                const endA = startA + (z.demezCastProgress / 2.0) * Math.PI * 2;
+                ctx.arc(z.x, z.y, dotR + 4.8, startA, endA);
+                ctx.stroke();
+            }
+
+            if (z.isRezzer && z.ccState === 'none' && z.rezCastProgress > 0 && z.rezTarget) {
+                ctx.strokeStyle = 'rgba(245, 197, 66, 0.45)';
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(z.x, z.y);
+                ctx.lineTo(z.rezTarget.x, z.rezTarget.y);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#f5c542';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const startA = -Math.PI / 2;
+                const endA = startA + (z.rezCastProgress / 2.2) * Math.PI * 2;
+                ctx.arc(z.x, z.y, dotR + 4.8, startA, endA);
+                ctx.stroke();
+            }
+
+            let fill = '#ff4c4c';
+            if (z.ccState === 'mezzed') fill = '#b84cff';
+            else if (z.ccState === 'stunned') fill = '#ffd60a';
+            else if (z.purged) fill = '#ffffff';
+
+            ctx.fillStyle = fill;
+            ctx.beginPath();
+            ctx.arc(z.x, z.y, dotR, 0, Math.PI * 2);
+            ctx.fill();
+
+            drawRoleRing(z.x, z.y, z, dotR);
+
+            // Health bar width scales with maxHp so Tanks visibly show high HP pools
+            if (z.hp < z.maxHp) {
+                const bw = Math.round(8 + (z.maxHp / 190) * 10);
+                const yOff = dotR + 6.5;
+                ctx.fillStyle = '#111';
+                ctx.fillRect(z.x - bw / 2, z.y - yOff, bw, 2.5);
+                ctx.fillStyle = z.hp < z.maxHp * 0.35 ? '#ff6b6b' : '#4cff88';
+                ctx.fillRect(z.x - bw / 2, z.y - yOff, bw * (z.hp / z.maxHp), 2.5);
+            }
+
+            ctx.restore();
+        });
+
+        // Draw Squad Dots
+        squad.forEach(s => {
+            ctx.save();
+            const dotR = s.archetype === 'healer' ? 5.6 : 4.7;
+
+            if (!s.alive) {
+                ctx.fillStyle = '#263240';
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, dotR * 0.8, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+                return;
+            }
+
+            // 2.0s AoE Stun Cast Progress Ring on Stunner (#1)
+            if (isAoEBomb && useBombStun && s.id === 1 && stunCastStarted && !bombStunApplied && !stunCastInterrupted) {
+                ctx.strokeStyle = '#ffd60a';
+                ctx.lineWidth = 2.4;
+                ctx.beginPath();
+                const startA = -Math.PI / 2;
+                const endA = startA + Math.min(1, stunCastProgress / STUN_CAST_DURATION) * Math.PI * 2;
+                ctx.arc(s.x, s.y, dotR + 6, startA, endA);
+                ctx.stroke();
+            }
+
+            // 1.0s Pre-Cast PBAoE Charge Arc on Bombers (#5-#8)
+            if (isAoEBomb && s.isBomber && preBombStarted && !bombInitialBurstDone && s.interruptTimer <= 0) {
+                ctx.strokeStyle = '#00e5ff';
+                ctx.lineWidth = 2.2;
+                ctx.beginPath();
+                const startA = -Math.PI / 2;
+                const endA = startA + Math.min(1, preBombProgress / PRE_BOMB_LEAD_TIME) * Math.PI * 2;
+                ctx.arc(s.x, s.y, dotR + 5.5, startA, endA);
+                ctx.stroke();
+            }
+
+            if (s.isCurer && s.ccState === 'none' && s.demezCastProgress > 0) {
+                ctx.strokeStyle = '#2ee59d';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const startA = -Math.PI / 2;
+                const endA = startA + (s.demezCastProgress / 1.35) * Math.PI * 2;
+                ctx.arc(s.x, s.y, dotR + 4.5, startA, endA);
+                ctx.stroke();
+            }
+
+            if (s.isRezzer && s.ccState === 'none' && s.rezCastProgress > 0 && s.rezTarget) {
+                ctx.strokeStyle = 'rgba(245, 197, 66, 0.55)';
+                ctx.lineWidth = 1.4;
+                ctx.beginPath();
+                ctx.moveTo(s.x, s.y);
+                ctx.lineTo(s.rezTarget.x, s.rezTarget.y);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#f5c542';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                const startA = -Math.PI / 2;
+                const endA = startA + (s.rezCastProgress / 1.85) * Math.PI * 2;
+                ctx.arc(s.x, s.y, dotR + 4.5, startA, endA);
+                ctx.stroke();
+            }
+
+            let fill = '#4ca6ff';
+            if (s.ccState === 'mezzed') fill = '#b84cff';
+            else if (s.ccState === 'stunned') fill = '#ffd60a';
+            else if (s.purged) fill = '#ffffff';
+            else if (s.hitFlash > 0) fill = '#ffffff';
+
+            ctx.fillStyle = fill;
+            ctx.shadowColor = s.hitFlash > 0 ? '#ff5252' : '#4ca6ff';
+            ctx.shadowBlur = s.hitFlash > 0 ? 12 : 8;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, dotR, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            drawRoleRing(s.x, s.y, s, dotR);
+
+            // Interrupted caster indicator
+            if (isAoEBomb && s.isBomber && s.interruptTimer > 0) {
+                ctx.strokeStyle = '#ff4c4c';
+                ctx.lineWidth = 1.8;
+                ctx.beginPath();
+                ctx.arc(s.x, s.y, dotR + 3.2, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(s.x - 5.2, s.y - 5.2);
+                ctx.lineTo(s.x + 5.2, s.y + 5.2);
+                ctx.stroke();
+            }
+
+            if (s.hp < s.maxHp) {
+                const bw = Math.round(9 + (s.maxHp / 150) * 6);
+                const yOff = dotR + 5.5;
+                ctx.fillStyle = '#111';
+                ctx.fillRect(s.x - bw / 2, s.y - yOff, bw, 2.5);
+                ctx.fillStyle = s.hp < s.maxHp * 0.4 ? '#ff5252' : '#4ca6ff';
+                ctx.fillRect(s.x - bw / 2, s.y - yOff, bw * (s.hp / s.maxHp), 2.5);
+            }
+            ctx.restore();
+        });
+
+        // Draw Melee Slash Arcs
+        slashes.forEach(sl => {
+            ctx.save();
+            ctx.globalAlpha = Math.max(0, sl.alpha);
+            ctx.strokeStyle = sl.color;
+            ctx.lineWidth = 2.2;
+            ctx.beginPath();
+            ctx.arc(sl.x, sl.y, sl.radius, sl.angle - 0.75, sl.angle + 0.75);
+            ctx.stroke();
+            ctx.restore();
+        });
+
+        // Draw Projectiles
+        projectiles.forEach(p => {
+            const curX = p.x + (p.tx - p.x) * p.progress;
+            const curY = p.y + (p.ty - p.y) * p.progress;
+            const tailProgress = Math.max(0, p.progress - 0.30);
+            const tailX = p.x + (p.tx - p.x) * tailProgress;
+            const tailY = p.y + (p.ty - p.y) * tailProgress;
+
+            const isSquad = p.faction === 'squad';
+
+            ctx.save();
+            ctx.strokeStyle = isSquad ? '#7ce8ff' : '#ff6b4a';
+            ctx.lineWidth = isSquad ? 2 : 1.8;
+            ctx.beginPath();
+            ctx.moveTo(tailX, tailY);
+            ctx.lineTo(curX, curY);
+            ctx.stroke();
+
+            ctx.fillStyle = isSquad ? '#ffffff' : '#ffd166';
+            ctx.beginPath();
+            ctx.arc(curX, curY, isSquad ? 2 : 1.8, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
+        });
+
+        ctx.restore();
+    }
+
+    function loop(timestamp) {
+        if (!lastTimestamp) lastTimestamp = timestamp;
+        const dt = Math.min((timestamp - lastTimestamp) / 1000, 0.05);
+        lastTimestamp = timestamp;
+
+        updateSimulation(dt);
+        draw();
+        requestAnimationFrame(loop);
+    }
+
+    // Event Listeners
+    slider.addEventListener('input', updateMetrics);
+    [zergSizeSlider, playerPurgeSlider, zergPurgeSlider, playerRezToggle, zergRezToggle].forEach(control => {
+        control.addEventListener('input', () => {
+            updateMetrics();
+            if (simState === 'idle') initEntities();
+        });
+        control.addEventListener('change', () => {
+            updateMetrics();
+            if (simState !== 'idle') startSimulation();
+        });
+    });
+    function selectScenario(nextScenario) {
+        scenario = nextScenario;
+        const towerActive = scenario === 'tower';
+        tabAmbush.classList.toggle('active', !towerActive);
+        tabTower.classList.toggle('active', towerActive);
+        tabAmbush.setAttribute('aria-selected', String(!towerActive));
+        tabTower.setAttribute('aria-selected', String(towerActive));
+        towerNote.style.display = towerActive ? 'block' : 'none';
+        isTowerWrapping = towerActive;
+        initEntities();
+        updateMetrics();
+        updateScoreboard();
+    }
+    tabAmbush.addEventListener('click', () => selectScenario('ambush'));
+    tabTower.addEventListener('click', () => selectScenario('tower'));
+    toggleBomb.addEventListener('change', () => {
+        updateMetrics();
+        if (simState !== 'idle') startSimulation();
+    });
+    toggleStun.addEventListener('change', () => {
+        updateMetrics();
+        if (simState !== 'idle') startSimulation();
+    });
+    btnAmbush.addEventListener('click', startSimulation);
+    btnPresetShort.addEventListener('click', () => {
+        slider.value = 2;
+        updateMetrics();
+        startSimulation();
+    });
+    btnPresetMin.addEventListener('click', () => {
+        slider.value = 4.5;
+        updateMetrics();
+        startSimulation();
+    });
+    btnPresetLong.addEventListener('click', () => {
+        slider.value = 35;
+        updateMetrics();
+        startSimulation();
+    });
+    btnCleave.addEventListener('click', () => {
+        if (simState === 'fighting') {
+            breakAllMez('FATAL ERROR: Stray AoE broke Mez!');
+        }
+    });
+
+    // Initialize
+    resizeCanvas();
+    initEntities();
+    updateMetrics();
+    requestAnimationFrame(loop);
+</script>
+</body>
+</html>
