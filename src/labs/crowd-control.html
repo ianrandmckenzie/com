@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Lab write-up: long-duration crowd control, pacing, and readable combat loops with a compact prototype editor.">
+    <meta name="keywords" content="crowd control, game design, combat pacing, prototype, interactive write-up">
+    <title>LAB-004-CC | Ian R. McKenzie</title>
+    <meta name="bc-label" content="Crowd Control">
+    <style>
+        .crp-grid { background-image: linear-gradient(#e2e8f0 1px, transparent 1px), linear-gradient(90deg, #e2e8f0 1px, transparent 1px); background-size: 40px 40px; }
+        .dark .crp-grid { background-image: linear-gradient(#1e293b 1px, transparent 1px), linear-gradient(90deg, #1e293b 1px, transparent 1px); background-size: 40px 40px; }
+        .prototype-shell:fullscreen { background: #020617; padding: 1rem; }
+        .prototype-shell:fullscreen iframe { height: calc(100vh - 2rem); }
+        .prototype-shell:fullscreen .prototype-exit { display: inline-flex; }
+    </style>
+    <script>
+      (function(){var p=localStorage.getItem('theme-preference');var d=document.documentElement;if(p==='light'){d.classList.remove('dark');}else if(p==='dark'){d.classList.add('dark');}else{if(!window.matchMedia('(prefers-color-scheme: light)').matches){d.classList.add('dark');}}})();
+    </script>
+    <link href="/style.css" rel="stylesheet" />
+</head>
+<body class="bg-white text-slate-900 dark:bg-slate-900 dark:text-slate-100 font-sans leading-relaxed crp-grid">
+    <main id="main-content">
+        <article class="max-w-5xl mx-auto px-6 pt-4 md:pt-10 pb-12 bg-white/80 dark:bg-slate-900/80 backdrop-blur-sm border-x border-slate-200 dark:border-slate-800 shadow-2xl">
+            <header class="mb-20 border-b border-slate-200 dark:border-slate-800 pb-12">
+                <div class="px-3 py-1 inline-block mb-6 text-[10px] font-mono font-bold tracking-[0.3em] text-slate-700 dark:text-slate-200 border border-slate-300 dark:border-slate-700 rounded uppercase bg-slate-100 dark:bg-slate-950/40">REF: LAB-004-CC — Opinion</div>
+                <h1 class="text-4xl md:text-6xl font-black mb-8 leading-tight uppercase tracking-tighter">An argument in favor of <span class="text-purple-600 dark:text-purple-400">Long-duration Crowd Control</span></h1>
+                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-[11px] font-mono text-slate-600 dark:text-slate-300 uppercase tracking-widest">
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">Category</span> Game Design Theory</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">Topic</span> PvP Combat Systems</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">Focus</span> Long-duration Crowd Control</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">Text</span> Human-written</div>
+                    <div class="border-l border-slate-300 dark:border-slate-700 pl-4"><span class="block text-slate-500 dark:text-slate-400 font-semibold">First Published</span> <time datetime="2026-11-19">Nov. 19, 2026</time></div>
+                </div>
+            </header>
+
+            <div class="space-y-24">
+                <section class="grid md:grid-cols-3 gap-12">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Long_Duration_Crowd_Control</div>
+                    <div class="md:col-span-2 space-y-6">
+                        <p class="text-lg text-slate-600 dark:text-slate-300 leading-relaxed font-light">First, we need to define what I mean by long-duration crowd control. When I say long-duration, there are four things to keep in mind about how it functions:</p>
+                        <ol class="list-none space-y-4 font-mono text-[11px] text-slate-600 dark:text-slate-300">
+                          <li class="flex items-start gap-3 border-b border-slate-200 dark:border-slate-800 pb-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-purple-300 dark:border-purple-700 text-[10px] font-bold text-purple-700 dark:text-purple-300">01</span><span>It is <strong>not</strong> a stun effect in the traditional sense because taking damage immediately breaks the effect</span></li>
+                          <li class="flex items-start gap-3 border-b border-slate-200 dark:border-slate-800 pb-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-purple-300 dark:border-purple-700 text-[10px] font-bold text-purple-700 dark:text-purple-300">02</span><span>In some games, there are no diminishing returns; instead, there is a long-duration immunity to the effect</span></li>
+                          <li class="flex items-start gap-3 border-b border-slate-200 dark:border-slate-800 pb-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-purple-300 dark:border-purple-700 text-[10px] font-bold text-purple-700 dark:text-purple-300">03</span><span>It has historically taken shape through "sleep," "polymorph," "mesmerize," or "mind control" animations and flavor text, where the victim is stopped in their tracks and unable to take action</span></li>
+                          <li class="flex items-start gap-3 border-b border-slate-200 dark:border-slate-800 pb-3"><span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-purple-300 dark:border-purple-700 text-[10px] font-bold text-purple-700 dark:text-purple-300">04</span><span>Alternatively, it can come in the form of a "root" effect where they are held in place physically, but can still perform spellcasting actions like healing or offensive spells, or ranged attacks with a bow, crossbow, or with throwing weapons</span></li>
+                        </ol>
+                        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">Long-duration crowd control was often used in legacy MMORPGs like Lineage 2, EverQuest, and a game I've sunk over 10,000 hours into: Dark Age of Camelot (DAoC). This form of crowd control is seldom used in contemporary video game design. Arguing against long-duration crowd control, a game designer might tell you that it is bad game design because it's not fun. Being taken out of the fight for 30 seconds or more, twiddling your thumbs while watching all your friends around you die is indeed a miserable prospect.</p>
+                        <p class="text-slate-600 dark:text-slate-300 leading-relaxed">Going by that premise at face value, I'm inclined to agree that it's not fun, <i>if you're not interested in competitive gameplay.</i> Yet, if I am playing a video game and have opted myself into player-versus-player conflict, isn't competition <strong>exactly what I'm looking for?</strong> Anyone who is being honest with themselves about PvP knows that we aren't sitting down to get our asses handed to us because we want to put on some lo-fi hip-hop, have a soothing cup of tea, and chill out with some low-impact gaming.</p>
+                    </div>
+                </section>
+                <section class="grid md:grid-cols-3 gap-12">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Raising_the_stakes</div>
+                    <div class="md:col-span-2 space-y-6">
+                      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">Being taken out of the fight for 30 seconds or more at a time raises the stakes of every fight. It demands situational awareness at all times. It requires constant panning of your camera to watch for incoming threats. It demands coordination with your group members: listening for callouts announcing "incoming!" and bursting out of formation so that you don't all get mesmerized in a centralized cluster.</p>
+                      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">The fact that area-of-effect (AoE) long-duration crowd control can empower a group of 8 people to feasibly wipe out a group of 40+ other players in a single fight isn't the unbalanced or unfair mechanism people may have you believe. It is instead a tactical advantage that can be utilized to the benefit of smaller, more coordinated, and more ambitious groups. It forces larger numbers not to rest on the laurels of manpower alone. It can even arguably make combat more realistic: superior numbers do not guarantee victory when coordination and tactics are decisive.</p>
+                    </div>
+                </section>
+
+                <section class="grid md:grid-cols-3 gap-12">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">The_Forgotten_Archetype</div>
+                    <div class="md:col-span-2 space-y-6">
+                      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">In most cooperative RPGs, characters can be distilled into three archetypes: healer (heal damage), DPS (deal damage), and tank (soak damage).</p>
+                      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">In more traditional contemporary PvP systems, combat is largely reduced to an obsessive mastering of cooldown rotation with opportunistic bursts of large damage during coordinated stuns/stun-locks. Sure, it's perhaps more engaging if we go by a metric of actions per minute. But to me, <strong>all this system does is replace cognitive friction with ergonomic friction</strong>. Players are forced to speedrun carpal tunnel syndrome in order to become top ranked arena battlers, all while being deprived of a compelling and fun <strong>Controller</strong> archetype of RPG gameplay.</p>
+                      <p class="text-slate-600 dark:text-slate-300 leading-relaxed">The controller archetype is often a counter to itself in PvP settings, with the ability to cure other group members who are mesmerized. I'm not sure if I've ever seen a game where a character was built to fill the controller role completely; games typically make controllers a hybrid role with secondary skills like healing or damage dealing.</p>
+                    </div>
+                </section>
+
+                <section class="border-t border-slate-200 dark:border-slate-800 pt-16" aria-labelledby="prototype-heading">
+                    <div class="flex flex-wrap items-start justify-between gap-4 mb-6">
+                        <div>
+                            <p class="text-[10px] font-mono font-bold tracking-[0.3em] text-slate-500 dark:text-slate-400 uppercase">Interactive_Simulator</p>
+                            <h2 id="prototype-heading" class="text-2xl font-black uppercase tracking-tight">Theory Into Practice</h2>
+                        </div>
+                        <button id="prototype-maximize" type="button" class="inline-flex items-center gap-2 border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-950 px-4 py-2 text-[10px] font-mono font-bold uppercase tracking-widest text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Maximize crowd control prototype">
+                            <svg aria-hidden="true" viewBox="0 0 16 16" class="h-4 w-4 fill-none stroke-current" stroke-width="1.5"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4"/></svg>
+                            <span>Maximize</span>
+                        </button>
+                    </div>
+                    <div id="prototype-shell" class="prototype-shell relative overflow-hidden border border-slate-300 dark:border-slate-700 bg-slate-950 p-2 md:p-4">
+                        <button id="prototype-exit" type="button" class="prototype-exit hidden absolute right-5 top-5 z-10 items-center justify-center rounded-full border border-white/30 bg-slate-950/90 p-2 text-white hover:bg-slate-800" aria-label="Exit full screen">
+                            <svg aria-hidden="true" viewBox="0 0 16 16" class="h-5 w-5 fill-none stroke-current" stroke-width="1.5"><path d="M3 3l10 10M13 3L3 13"/></svg>
+                        </button>
+                        <iframe src="/cc_simulator/index.html" title="Crowd control prototype editor" class="block h-[70vh] min-h-120 w-full border-0 bg-white" loading="lazy"></iframe>
+                    </div>
+                </section>
+
+                <section class="grid md:grid-cols-3 gap-12 border-t border-slate-200 dark:border-slate-800 pt-16">
+                    <div class="text-xs font-black uppercase tracking-[0.4em] text-slate-600 dark:text-slate-300">Closing_Remarks</div>
+                    <div class="md:col-span-2 space-y-6">
+                      <p class="md:col-span-2 text-slate-600 dark:text-slate-300 leading-relaxed">If you played with the simulator above, you may have noticed the zerg often prevails. This is especially true when you ramp up their ability to effectively use countermeasures. The more you tip the scales in a balance of skill, you can see that long-duration crowd control tends to be a non-factor. It becomes a pillar of tactical necessity. If you are slow to use or counter it, you do so at your own peril.</p>
+                      <p class="md:col-span-2 text-slate-600 dark:text-slate-300 leading-relaxed">These results also further one of the key points I need to stress: long-duration crowd control is only imbalanced if a game designer <strong>makes</strong> it imbalanced. In the early days of Dark Age of Camelot, it absolutely <strong>was</strong> overpowered. But as the DAoC devs gradually introduced abilities like purge, a castable cure mesmerize, and other countermeasures, long-duration crowd control became like many abilities — extremely strong if not addressed promptly through skill, preventative tactics, and reaction time.</p>
+                    </div>
+                </section>
+            </div>
+        </article>
+    </main>
+    <script>
+      const shell = document.querySelector('#prototype-shell');
+      const maximize = document.querySelector('#prototype-maximize');
+      const exit = document.querySelector('#prototype-exit');
+      const enterFullscreen = () => shell.requestFullscreen?.() || shell.webkitRequestFullscreen?.();
+      maximize.addEventListener('click', enterFullscreen);
+      exit.addEventListener('click', () => document.exitFullscreen?.() || document.webkitExitFullscreen?.());
+      document.addEventListener('fullscreenchange', () => {
+        const active = document.fullscreenElement === shell;
+        maximize.setAttribute('aria-label', active ? 'Prototype is maximized' : 'Maximize crowd control prototype');
+        exit.classList.toggle('hidden', !active);
+        exit.classList.toggle('inline-flex', active);
+      });
+    </script>
+    <script type="module" src="/main.js"></script>
+</body>
+</html>

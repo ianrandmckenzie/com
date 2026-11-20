@@ -39,7 +39,7 @@ export function mountNav() {
     // Dev / non-baked environment: build the full HTML
     const isProofActive    = filename === 'case-studies' || filename === 'case-study' || filename === 'jane-sites' || filename === 'failureunit' || filename === 'seo-case-study';
     const isAdvisoryActive = filename === 'consulting';
-    const isLabsActive     = filename === 'labs' || filename === 'spiral' || filename === 'voxel' || filename === 'cube-textures';
+    const isLabsActive     = filename === 'labs' || filename === 'spiral' || filename === 'voxel' || filename === 'cube-textures' || filename === 'crowd-control';
     const isArticlesActive = /^\/articles(\/|$)/.test(window.location.pathname);
     const isHomePage       = filename === 'index' || window.location.pathname === '/';
 
